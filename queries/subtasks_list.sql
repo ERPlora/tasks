@@ -5,4 +5,3 @@ SELECT id, task_number, title, description, project_id, status, priority,
        parent_task_id, tags, created_at
 FROM tasks_task
 WHERE hub_id = :hub_id AND is_deleted = 0 AND parent_task_id = :task_id
-ORDER BY created_at ASC;

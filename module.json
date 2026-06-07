@@ -4,7 +4,16 @@
   "version": "1.0.0",
   "agent": {
     "description": "Manages internal staff tasks and projects: create, assign, update status, complete tasks, add comments, and organise tasks into projects.",
-    "keywords": ["task", "project", "assignment", "todo", "priority", "subtask", "comment", "staff"]
+    "keywords": [
+      "task",
+      "project",
+      "assignment",
+      "todo",
+      "priority",
+      "subtask",
+      "comment",
+      "staff"
+    ]
   },
   "depends_on": [],
   "permissions": [
@@ -51,37 +60,255 @@
       "permission": "tasks.view_task",
       "sql": "queries/tasks_list.sql",
       "schema": "schemas/tasks_list.json",
-      "ai": { "description": "Lists all tasks in the hub with their status, priority, and assignee" }
+      "list": {
+        "search": [
+          "task_number",
+          "title",
+          "description",
+          "assigned_to_ref",
+          "created_by_ref"
+        ],
+        "sort": [
+          "id",
+          "task_number",
+          "title",
+          "description",
+          "project_id",
+          "status",
+          "priority",
+          "assigned_to_ref",
+          "created_by_ref",
+          "due_date",
+          "completed_at",
+          "parent_task_id",
+          "tags",
+          "created_at"
+        ],
+        "default_sort": "created_at",
+        "default_dir": "desc",
+        "filters": {
+          "task_number": {
+            "op": "eq"
+          },
+          "title": {
+            "op": "eq"
+          },
+          "description": {
+            "op": "eq"
+          },
+          "project_id": {
+            "op": "eq"
+          },
+          "status": {
+            "op": "eq"
+          },
+          "priority": {
+            "op": "eq"
+          },
+          "assigned_to_ref": {
+            "op": "eq"
+          },
+          "created_by_ref": {
+            "op": "eq"
+          },
+          "due_date": {
+            "op": "range"
+          },
+          "completed_at": {
+            "op": "range"
+          },
+          "parent_task_id": {
+            "op": "eq"
+          },
+          "tags": {
+            "op": "eq"
+          },
+          "created_at": {
+            "op": "range"
+          }
+        },
+        "page_size": 50
+      },
+      "ai": {
+        "description": "Lists all tasks in the hub with their status, priority, and assignee"
+      }
     },
     "tasks.tasks.get": {
       "permission": "tasks.view_task",
       "sql": "queries/task_get.sql",
       "schema": "schemas/task_get.json",
-      "ai": { "description": "Gets the full details of a task by its identifier" }
+      "ai": {
+        "description": "Gets the full details of a task by its identifier"
+      }
     },
     "tasks.tasks.subtasks": {
       "permission": "tasks.view_task",
       "sql": "queries/subtasks_list.sql",
       "schema": "schemas/subtasks_list.json",
-      "ai": { "description": "Lists the subtasks associated with a parent task" }
+      "list": {
+        "search": [
+          "task_number",
+          "title",
+          "description",
+          "assigned_to_ref",
+          "created_by_ref"
+        ],
+        "sort": [
+          "id",
+          "task_number",
+          "title",
+          "description",
+          "project_id",
+          "status",
+          "priority",
+          "assigned_to_ref",
+          "created_by_ref",
+          "due_date",
+          "completed_at",
+          "parent_task_id",
+          "tags",
+          "created_at"
+        ],
+        "default_sort": "created_at",
+        "default_dir": "desc",
+        "filters": {
+          "task_number": {
+            "op": "eq"
+          },
+          "title": {
+            "op": "eq"
+          },
+          "description": {
+            "op": "eq"
+          },
+          "project_id": {
+            "op": "eq"
+          },
+          "status": {
+            "op": "eq"
+          },
+          "priority": {
+            "op": "eq"
+          },
+          "assigned_to_ref": {
+            "op": "eq"
+          },
+          "created_by_ref": {
+            "op": "eq"
+          },
+          "due_date": {
+            "op": "range"
+          },
+          "completed_at": {
+            "op": "range"
+          },
+          "parent_task_id": {
+            "op": "eq"
+          },
+          "tags": {
+            "op": "eq"
+          },
+          "created_at": {
+            "op": "range"
+          }
+        },
+        "page_size": 50
+      },
+      "ai": {
+        "description": "Lists the subtasks associated with a parent task"
+      }
     },
     "tasks.tasks.comments": {
       "permission": "tasks.view_task",
       "sql": "queries/comments_list.sql",
       "schema": "schemas/comments_list.json",
-      "ai": { "description": "Lists the comments in a task's discussion thread" }
+      "list": {
+        "search": [
+          "author_ref"
+        ],
+        "sort": [
+          "id",
+          "task_id",
+          "author_ref",
+          "comment",
+          "created_at"
+        ],
+        "default_sort": "created_at",
+        "default_dir": "desc",
+        "filters": {
+          "task_id": {
+            "op": "eq"
+          },
+          "author_ref": {
+            "op": "eq"
+          },
+          "comment": {
+            "op": "eq"
+          },
+          "created_at": {
+            "op": "range"
+          }
+        },
+        "page_size": 50
+      },
+      "ai": {
+        "description": "Lists the comments in a task's discussion thread"
+      }
     },
     "tasks.tasks.my": {
       "permission": "tasks.view_task",
       "sql": "queries/my_tasks.sql",
       "schema": "schemas/my_tasks.json",
-      "ai": { "description": "Lists tasks assigned to the current user" }
+      "ai": {
+        "description": "Lists tasks assigned to the current user"
+      }
     },
     "tasks.projects.list": {
       "permission": "tasks.view_task",
       "sql": "queries/projects_list.sql",
       "schema": "schemas/projects_list.json",
-      "ai": { "description": "Lists all existing task projects" }
+      "list": {
+        "search": [
+          "code",
+          "name",
+          "owner_ref"
+        ],
+        "sort": [
+          "id",
+          "code",
+          "name",
+          "color",
+          "is_active",
+          "owner_ref",
+          "created_at"
+        ],
+        "default_sort": "created_at",
+        "default_dir": "desc",
+        "filters": {
+          "code": {
+            "op": "eq"
+          },
+          "name": {
+            "op": "eq"
+          },
+          "color": {
+            "op": "eq"
+          },
+          "is_active": {
+            "op": "eq"
+          },
+          "owner_ref": {
+            "op": "eq"
+          },
+          "created_at": {
+            "op": "range"
+          }
+        },
+        "page_size": 50
+      },
+      "ai": {
+        "description": "Lists all existing task projects"
+      }
     }
   },
   "commands": {
@@ -96,7 +323,9 @@
       "emit": [
         "tasks.task.created"
       ],
-      "ai": { "description": "Creates a new internal task with assignee, priority, and due date" }
+      "ai": {
+        "description": "Creates a new internal task with assignee, priority, and due date"
+      }
     },
     "tasks.tasks.update_status": {
       "permission": "tasks.manage_task",
@@ -109,7 +338,9 @@
       "emit": [
         "tasks.task.status_changed"
       ],
-      "ai": { "description": "Changes the status of a task (todo, in_progress, blocked, done, cancelled)" }
+      "ai": {
+        "description": "Changes the status of a task (todo, in_progress, blocked, done, cancelled)"
+      }
     },
     "tasks.tasks.complete": {
       "permission": "tasks.manage_task",
@@ -122,7 +353,9 @@
       "emit": [
         "tasks.task.completed"
       ],
-      "ai": { "description": "Marks a task as completed and records the completion date" }
+      "ai": {
+        "description": "Marks a task as completed and records the completion date"
+      }
     },
     "tasks.tasks.assign": {
       "permission": "tasks.manage_task",
@@ -134,7 +367,9 @@
       "emit": [
         "tasks.task.assigned"
       ],
-      "ai": { "description": "Assigns or reassigns a task to a team member" }
+      "ai": {
+        "description": "Assigns or reassigns a task to a team member"
+      }
     },
     "tasks.tasks.add_comment": {
       "permission": "tasks.add_task",
@@ -146,7 +381,9 @@
       "emit": [
         "tasks.comment.added"
       ],
-      "ai": { "description": "Adds a comment to a task's discussion thread" }
+      "ai": {
+        "description": "Adds a comment to a task's discussion thread"
+      }
     },
     "tasks.projects.create": {
       "permission": "tasks.add_task",
@@ -158,7 +395,9 @@
       "emit": [
         "tasks.project.created"
       ],
-      "ai": { "description": "Creates a new project to group related tasks" }
+      "ai": {
+        "description": "Creates a new project to group related tasks"
+      }
     }
   },
   "events": {

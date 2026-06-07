@@ -1,7 +1,7 @@
 -- Tasks · esquema inicial (SQLite). Portado fielmente de old_modules/m_tasks/models.py.
 -- Modelos: TaskProject (agrupación de tareas), Task (unidad de trabajo con estado/prioridad/
 -- vencimiento/subtareas), TaskComment (comentario hilado) y TaskCounter (secuencia atómica
--- por hub+día para task_number). Contrato de fila estándar de hub-next (§2.5):
+-- por hub+día para task_number). Contrato de fila estándar de hub (§2.5):
 -- hub_id + soft-delete + auditoría.
 
 -- Proyecto: bucket de agrupación de tareas (p.ej. "Auditoría Q3", "Apertura tienda").
