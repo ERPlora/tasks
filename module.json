@@ -401,7 +401,11 @@
     }
   },
   "events": {
-    "listen": []
+    "listen": {
+      "whatsapp_inbox.message.received": {
+        "command": "tasks.tasks.create"
+      }
+    }
   },
   "ai_context": "Module: Tasks (id: tasks). Internal back-office to-do for staff operations: tasks with assignees, priorities (low/medium/high/urgent), due dates, optional projects, subtasks and threaded comments. Separate from any customer-facing ticketing. Models: TaskProject, Task, TaskComment, TaskCounter. task_number is auto-generated per hub as TSK-YYYYMMDD-NNNN. Status flow: todo/in_progress/blocked/done/cancelled (done stamps completed_at). Queries: tasks.tasks.list, tasks.tasks.get, tasks.tasks.subtasks, tasks.tasks.comments, tasks.tasks.my, tasks.projects.list. Commands: tasks.tasks.create, tasks.tasks.update_status, tasks.tasks.complete, tasks.tasks.assign, tasks.tasks.add_comment, tasks.projects.create.",
   "ui": {
