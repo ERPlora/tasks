@@ -320,9 +320,6 @@
         "file": "dist/handler.wasm",
         "function": "create_task"
       },
-      "emit": [
-        "tasks.task.created"
-      ],
       "ai": {
         "description": "Creates a new internal task with assignee, priority, and due date"
       }
@@ -335,9 +332,6 @@
         "file": "dist/handler.wasm",
         "function": "update_status"
       },
-      "emit": [
-        "tasks.task.status_changed"
-      ],
       "ai": {
         "description": "Changes the status of a task (todo, in_progress, blocked, done, cancelled)"
       }
@@ -350,9 +344,6 @@
         "file": "dist/handler.wasm",
         "function": "complete_task"
       },
-      "emit": [
-        "tasks.task.completed"
-      ],
       "ai": {
         "description": "Marks a task as completed and records the completion date"
       }
@@ -398,6 +389,30 @@
       "ai": {
         "description": "Creates a new project to group related tasks"
       }
+    },
+    "tasks._bump_counter": {
+      "permission": "tasks.add_task",
+      "sql": [
+        "commands/_bump_counter.sql"
+      ]
+    },
+    "tasks._insert_task": {
+      "permission": "tasks.add_task",
+      "sql": [
+        "commands/_insert_task.sql"
+      ]
+    },
+    "tasks._set_status": {
+      "permission": "tasks.manage_task",
+      "sql": [
+        "commands/_set_status.sql"
+      ]
+    },
+    "tasks._complete": {
+      "permission": "tasks.manage_task",
+      "sql": [
+        "commands/_complete.sql"
+      ]
     }
   },
   "events": {

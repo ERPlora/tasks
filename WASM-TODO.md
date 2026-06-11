@@ -1,5 +1,12 @@
 # tasks — lógica para handler Rust→WASM (Tier 2)
 
+> ✅ **Implementado** (2026-06-11, issue tasks#3): `handler/src/lib.rs` → `dist/handler.wasm`
+> con intenciones `tasks._bump_counter` / `_insert_task` / `_set_status` / `_complete`.
+> Matiz vs. el plan de abajo: el runtime actual NO pasa lecturas pre-cargadas, así que las
+> guardas dependientes del estado previo (FKs propias, `not_found`, `already_done`,
+> `cancelled_locked`, sellado condicional de `completed_at`) van EN EL SQL de la intención
+> (no-op si no se cumplen — patrón `kitchen`). Detalle en `architecture/modules/tasks.md`.
+
 El CRUD plano y las
 mutaciones simples (asignar, comentar, crear proyecto) ya están en SQL declarativo
 Tier 0 (`commands/{assign_task,add_comment,create_project}.sql`). Lo que sigue es
