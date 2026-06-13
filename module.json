@@ -1,7 +1,7 @@
 {
   "id": "tasks",
   "name": "Tasks",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "agent": {
     "description": "Manages internal staff tasks and projects: create, assign, update status, complete tasks, add comments, and organise tasks into projects.",
     "keywords": [
