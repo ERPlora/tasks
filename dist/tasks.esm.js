@@ -9,7 +9,7 @@ var __decorateClass = (decorators, target, key, kind) => {
   return result;
 };
 
-// ../../node_modules/.pnpm/@lit-labs+ssr-dom-shim@1.6.0/node_modules/@lit-labs/ssr-dom-shim/lib/element-internals.js
+// node_modules/@lit-labs/ssr-dom-shim/lib/element-internals.js
 var ElementInternalsShim = class ElementInternals {
   get shadowRoot() {
     return this.__host.__shadowRoot;
@@ -88,7 +88,7 @@ var ElementInternalsShim = class ElementInternals {
   }
 };
 
-// ../../node_modules/.pnpm/@lit-labs+ssr-dom-shim@1.6.0/node_modules/@lit-labs/ssr-dom-shim/lib/events.js
+// node_modules/@lit-labs/ssr-dom-shim/lib/events.js
 var __classPrivateFieldSet = function(receiver, state, value, kind, f3) {
   if (kind === "m") throw new TypeError("Private method is not writable");
   if (kind === "a" && !f3) throw new TypeError("Private accessor was defined without a setter");
@@ -246,7 +246,7 @@ Object.defineProperties(CustomEventShim.prototype, {
 var EventShimWithRealType = EventShim;
 var CustomEventShimWithRealType = CustomEventShim;
 
-// ../../node_modules/.pnpm/@lit-labs+ssr-dom-shim@1.6.0/node_modules/@lit-labs/ssr-dom-shim/lib/css.js
+// node_modules/@lit-labs/ssr-dom-shim/lib/css.js
 var _a2;
 var CSSRuleShim = (_a2 = class CSSRule {
   constructor() {
@@ -277,7 +277,7 @@ var CSSRuleShim = (_a2 = class CSSRule {
   }
 }, _a2.STYLE_RULE = 1, _a2.CHARSET_RULE = 2, _a2.IMPORT_RULE = 3, _a2.MEDIA_RULE = 4, _a2.FONT_FACE_RULE = 5, _a2.PAGE_RULE = 6, _a2.NAMESPACE_RULE = 10, _a2.KEYFRAMES_RULE = 7, _a2.KEYFRAME_RULE = 8, _a2.SUPPORTS_RULE = 12, _a2.COUNTER_STYLE_RULE = 11, _a2.FONT_FEATURE_VALUES_RULE = 14, _a2.MARGIN_RULE = 9, _a2);
 
-// ../../node_modules/.pnpm/@lit-labs+ssr-dom-shim@1.6.0/node_modules/@lit-labs/ssr-dom-shim/index.js
+// node_modules/@lit-labs/ssr-dom-shim/index.js
 globalThis.Event ??= EventShimWithRealType;
 globalThis.CustomEvent ??= CustomEventShimWithRealType;
 var constructionToken = Symbol();
@@ -674,221 +674,221 @@ var CustomElementRegistryShimWithRealType = CustomElementRegistry;
 var customElements2 = new CustomElementRegistryShimWithRealType();
 var windowShim = new WindowShim(constructionToken);
 
-// ../../node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/node/css-tag.js
+// node_modules/@lit/reactive-element/node/css-tag.js
 var t = globalThis;
 var e = t.ShadowRoot && (void 0 === t.ShadyCSS || t.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
 var s = Symbol();
 var o = /* @__PURE__ */ new WeakMap();
 var n = class {
-  constructor(t5, e5, o7) {
+  constructor(t7, e5, o7) {
     if (this._$cssResult$ = true, o7 !== s) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
-    this.cssText = t5, this.t = e5;
+    this.cssText = t7, this.t = e5;
   }
   get styleSheet() {
-    let t5 = this.o;
+    let t7 = this.o;
     const s5 = this.t;
-    if (e && void 0 === t5) {
+    if (e && void 0 === t7) {
       const e5 = void 0 !== s5 && 1 === s5.length;
-      e5 && (t5 = o.get(s5)), void 0 === t5 && ((this.o = t5 = new CSSStyleSheet()).replaceSync(this.cssText), e5 && o.set(s5, t5));
+      e5 && (t7 = o.get(s5)), void 0 === t7 && ((this.o = t7 = new CSSStyleSheet()).replaceSync(this.cssText), e5 && o.set(s5, t7));
     }
-    return t5;
+    return t7;
   }
   toString() {
     return this.cssText;
   }
 };
-var r = (t5) => new n("string" == typeof t5 ? t5 : t5 + "", void 0, s);
-var i = (t5, ...e5) => {
-  const o7 = 1 === t5.length ? t5[0] : e5.reduce((e6, s5, o8) => e6 + ((t6) => {
-    if (true === t6._$cssResult$) return t6.cssText;
-    if ("number" == typeof t6) return t6;
-    throw Error("Value passed to 'css' function must be a 'css' function result: " + t6 + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
-  })(s5) + t5[o8 + 1], t5[0]);
-  return new n(o7, t5, s);
+var r = (t7) => new n("string" == typeof t7 ? t7 : t7 + "", void 0, s);
+var i = (t7, ...e5) => {
+  const o7 = 1 === t7.length ? t7[0] : e5.reduce((e6, s5, o8) => e6 + ((t8) => {
+    if (true === t8._$cssResult$) return t8.cssText;
+    if ("number" == typeof t8) return t8;
+    throw Error("Value passed to 'css' function must be a 'css' function result: " + t8 + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
+  })(s5) + t7[o8 + 1], t7[0]);
+  return new n(o7, t7, s);
 };
 var S = (s5, o7) => {
-  if (e) s5.adoptedStyleSheets = o7.map((t5) => t5 instanceof CSSStyleSheet ? t5 : t5.styleSheet);
+  if (e) s5.adoptedStyleSheets = o7.map((t7) => t7 instanceof CSSStyleSheet ? t7 : t7.styleSheet);
   else for (const e5 of o7) {
     const o8 = document.createElement("style"), n6 = t.litNonce;
     void 0 !== n6 && o8.setAttribute("nonce", n6), o8.textContent = e5.cssText, s5.appendChild(o8);
   }
 };
-var c = e || void 0 === t.CSSStyleSheet ? (t5) => t5 : (t5) => t5 instanceof CSSStyleSheet ? ((t6) => {
+var c = e || void 0 === t.CSSStyleSheet ? (t7) => t7 : (t7) => t7 instanceof CSSStyleSheet ? ((t8) => {
   let e5 = "";
-  for (const s5 of t6.cssRules) e5 += s5.cssText;
+  for (const s5 of t8.cssRules) e5 += s5.cssText;
   return r(e5);
-})(t5) : t5;
+})(t7) : t7;
 
-// ../../node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/node/reactive-element.js
+// node_modules/@lit/reactive-element/node/reactive-element.js
 var { is: h, defineProperty: r2, getOwnPropertyDescriptor: o2, getOwnPropertyNames: n2, getOwnPropertySymbols: a, getPrototypeOf: c2 } = Object;
 var l = globalThis;
 l.customElements ??= customElements2;
 var p = l.trustedTypes;
 var d = p ? p.emptyScript : "";
 var u = l.reactiveElementPolyfillSupport;
-var f = (t5, s5) => t5;
-var b = { toAttribute(t5, s5) {
+var f = (t7, s5) => t7;
+var b = { toAttribute(t7, s5) {
   switch (s5) {
     case Boolean:
-      t5 = t5 ? d : null;
+      t7 = t7 ? d : null;
       break;
     case Object:
     case Array:
-      t5 = null == t5 ? t5 : JSON.stringify(t5);
+      t7 = null == t7 ? t7 : JSON.stringify(t7);
   }
-  return t5;
-}, fromAttribute(t5, s5) {
-  let i7 = t5;
+  return t7;
+}, fromAttribute(t7, s5) {
+  let i7 = t7;
   switch (s5) {
     case Boolean:
-      i7 = null !== t5;
+      i7 = null !== t7;
       break;
     case Number:
-      i7 = null === t5 ? null : Number(t5);
+      i7 = null === t7 ? null : Number(t7);
       break;
     case Object:
     case Array:
       try {
-        i7 = JSON.parse(t5);
-      } catch (t6) {
+        i7 = JSON.parse(t7);
+      } catch (t8) {
         i7 = null;
       }
   }
   return i7;
 } };
-var m = (t5, s5) => !h(t5, s5);
+var m = (t7, s5) => !h(t7, s5);
 var y = { attribute: true, type: String, converter: b, reflect: false, useDefault: false, hasChanged: m };
 Symbol.metadata ??= Symbol("metadata"), l.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 var g = class extends (globalThis.HTMLElement ?? HTMLElementShimWithRealType) {
-  static addInitializer(t5) {
-    this._$Ei(), (this.l ??= []).push(t5);
+  static addInitializer(t7) {
+    this._$Ei(), (this.l ??= []).push(t7);
   }
   static get observedAttributes() {
     return this.finalize(), this._$Eh && [...this._$Eh.keys()];
   }
-  static createProperty(t5, s5 = y) {
-    if (s5.state && (s5.attribute = false), this._$Ei(), this.prototype.hasOwnProperty(t5) && ((s5 = Object.create(s5)).wrapped = true), this.elementProperties.set(t5, s5), !s5.noAccessor) {
-      const i7 = Symbol(), e5 = this.getPropertyDescriptor(t5, i7, s5);
-      void 0 !== e5 && r2(this.prototype, t5, e5);
+  static createProperty(t7, s5 = y) {
+    if (s5.state && (s5.attribute = false), this._$Ei(), this.prototype.hasOwnProperty(t7) && ((s5 = Object.create(s5)).wrapped = true), this.elementProperties.set(t7, s5), !s5.noAccessor) {
+      const i7 = Symbol(), e5 = this.getPropertyDescriptor(t7, i7, s5);
+      void 0 !== e5 && r2(this.prototype, t7, e5);
     }
   }
-  static getPropertyDescriptor(t5, s5, i7) {
-    const { get: e5, set: h4 } = o2(this.prototype, t5) ?? { get() {
+  static getPropertyDescriptor(t7, s5, i7) {
+    const { get: e5, set: h4 } = o2(this.prototype, t7) ?? { get() {
       return this[s5];
-    }, set(t6) {
-      this[s5] = t6;
+    }, set(t8) {
+      this[s5] = t8;
     } };
     return { get: e5, set(s6) {
       const r6 = e5?.call(this);
-      h4?.call(this, s6), this.requestUpdate(t5, r6, i7);
+      h4?.call(this, s6), this.requestUpdate(t7, r6, i7);
     }, configurable: true, enumerable: true };
   }
-  static getPropertyOptions(t5) {
-    return this.elementProperties.get(t5) ?? y;
+  static getPropertyOptions(t7) {
+    return this.elementProperties.get(t7) ?? y;
   }
   static _$Ei() {
     if (this.hasOwnProperty(f("elementProperties"))) return;
-    const t5 = c2(this);
-    t5.finalize(), void 0 !== t5.l && (this.l = [...t5.l]), this.elementProperties = new Map(t5.elementProperties);
+    const t7 = c2(this);
+    t7.finalize(), void 0 !== t7.l && (this.l = [...t7.l]), this.elementProperties = new Map(t7.elementProperties);
   }
   static finalize() {
     if (this.hasOwnProperty(f("finalized"))) return;
     if (this.finalized = true, this._$Ei(), this.hasOwnProperty(f("properties"))) {
-      const t6 = this.properties, s5 = [...n2(t6), ...a(t6)];
-      for (const i7 of s5) this.createProperty(i7, t6[i7]);
+      const t8 = this.properties, s5 = [...n2(t8), ...a(t8)];
+      for (const i7 of s5) this.createProperty(i7, t8[i7]);
     }
-    const t5 = this[Symbol.metadata];
-    if (null !== t5) {
-      const s5 = litPropertyMetadata.get(t5);
-      if (void 0 !== s5) for (const [t6, i7] of s5) this.elementProperties.set(t6, i7);
+    const t7 = this[Symbol.metadata];
+    if (null !== t7) {
+      const s5 = litPropertyMetadata.get(t7);
+      if (void 0 !== s5) for (const [t8, i7] of s5) this.elementProperties.set(t8, i7);
     }
     this._$Eh = /* @__PURE__ */ new Map();
-    for (const [t6, s5] of this.elementProperties) {
-      const i7 = this._$Eu(t6, s5);
-      void 0 !== i7 && this._$Eh.set(i7, t6);
+    for (const [t8, s5] of this.elementProperties) {
+      const i7 = this._$Eu(t8, s5);
+      void 0 !== i7 && this._$Eh.set(i7, t8);
     }
     this.elementStyles = this.finalizeStyles(this.styles);
   }
-  static finalizeStyles(t5) {
+  static finalizeStyles(t7) {
     const s5 = [];
-    if (Array.isArray(t5)) {
-      const e5 = new Set(t5.flat(1 / 0).reverse());
-      for (const t6 of e5) s5.unshift(c(t6));
-    } else void 0 !== t5 && s5.push(c(t5));
+    if (Array.isArray(t7)) {
+      const e5 = new Set(t7.flat(1 / 0).reverse());
+      for (const t8 of e5) s5.unshift(c(t8));
+    } else void 0 !== t7 && s5.push(c(t7));
     return s5;
   }
-  static _$Eu(t5, s5) {
+  static _$Eu(t7, s5) {
     const i7 = s5.attribute;
-    return false === i7 ? void 0 : "string" == typeof i7 ? i7 : "string" == typeof t5 ? t5.toLowerCase() : void 0;
+    return false === i7 ? void 0 : "string" == typeof i7 ? i7 : "string" == typeof t7 ? t7.toLowerCase() : void 0;
   }
   constructor() {
     super(), this._$Ep = void 0, this.isUpdatePending = false, this.hasUpdated = false, this._$Em = null, this._$Ev();
   }
   _$Ev() {
-    this._$ES = new Promise((t5) => this.enableUpdating = t5), this._$AL = /* @__PURE__ */ new Map(), this._$E_(), this.requestUpdate(), this.constructor.l?.forEach((t5) => t5(this));
+    this._$ES = new Promise((t7) => this.enableUpdating = t7), this._$AL = /* @__PURE__ */ new Map(), this._$E_(), this.requestUpdate(), this.constructor.l?.forEach((t7) => t7(this));
   }
-  addController(t5) {
-    (this._$EO ??= /* @__PURE__ */ new Set()).add(t5), void 0 !== this.renderRoot && this.isConnected && t5.hostConnected?.();
+  addController(t7) {
+    (this._$EO ??= /* @__PURE__ */ new Set()).add(t7), void 0 !== this.renderRoot && this.isConnected && t7.hostConnected?.();
   }
-  removeController(t5) {
-    this._$EO?.delete(t5);
+  removeController(t7) {
+    this._$EO?.delete(t7);
   }
   _$E_() {
-    const t5 = /* @__PURE__ */ new Map(), s5 = this.constructor.elementProperties;
-    for (const i7 of s5.keys()) this.hasOwnProperty(i7) && (t5.set(i7, this[i7]), delete this[i7]);
-    t5.size > 0 && (this._$Ep = t5);
+    const t7 = /* @__PURE__ */ new Map(), s5 = this.constructor.elementProperties;
+    for (const i7 of s5.keys()) this.hasOwnProperty(i7) && (t7.set(i7, this[i7]), delete this[i7]);
+    t7.size > 0 && (this._$Ep = t7);
   }
   createRenderRoot() {
-    const t5 = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
-    return S(t5, this.constructor.elementStyles), t5;
+    const t7 = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
+    return S(t7, this.constructor.elementStyles), t7;
   }
   connectedCallback() {
-    this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(true), this._$EO?.forEach((t5) => t5.hostConnected?.());
+    this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(true), this._$EO?.forEach((t7) => t7.hostConnected?.());
   }
-  enableUpdating(t5) {
+  enableUpdating(t7) {
   }
   disconnectedCallback() {
-    this._$EO?.forEach((t5) => t5.hostDisconnected?.());
+    this._$EO?.forEach((t7) => t7.hostDisconnected?.());
   }
-  attributeChangedCallback(t5, s5, i7) {
-    this._$AK(t5, i7);
+  attributeChangedCallback(t7, s5, i7) {
+    this._$AK(t7, i7);
   }
-  _$ET(t5, s5) {
-    const i7 = this.constructor.elementProperties.get(t5), e5 = this.constructor._$Eu(t5, i7);
+  _$ET(t7, s5) {
+    const i7 = this.constructor.elementProperties.get(t7), e5 = this.constructor._$Eu(t7, i7);
     if (void 0 !== e5 && true === i7.reflect) {
       const h4 = (void 0 !== i7.converter?.toAttribute ? i7.converter : b).toAttribute(s5, i7.type);
-      this._$Em = t5, null == h4 ? this.removeAttribute(e5) : this.setAttribute(e5, h4), this._$Em = null;
+      this._$Em = t7, null == h4 ? this.removeAttribute(e5) : this.setAttribute(e5, h4), this._$Em = null;
     }
   }
-  _$AK(t5, s5) {
-    const i7 = this.constructor, e5 = i7._$Eh.get(t5);
+  _$AK(t7, s5) {
+    const i7 = this.constructor, e5 = i7._$Eh.get(t7);
     if (void 0 !== e5 && this._$Em !== e5) {
-      const t6 = i7.getPropertyOptions(e5), h4 = "function" == typeof t6.converter ? { fromAttribute: t6.converter } : void 0 !== t6.converter?.fromAttribute ? t6.converter : b;
+      const t8 = i7.getPropertyOptions(e5), h4 = "function" == typeof t8.converter ? { fromAttribute: t8.converter } : void 0 !== t8.converter?.fromAttribute ? t8.converter : b;
       this._$Em = e5;
-      const r6 = h4.fromAttribute(s5, t6.type);
+      const r6 = h4.fromAttribute(s5, t8.type);
       this[e5] = r6 ?? this._$Ej?.get(e5) ?? r6, this._$Em = null;
     }
   }
-  requestUpdate(t5, s5, i7, e5 = false, h4) {
-    if (void 0 !== t5) {
+  requestUpdate(t7, s5, i7, e5 = false, h4) {
+    if (void 0 !== t7) {
       const r6 = this.constructor;
-      if (false === e5 && (h4 = this[t5]), i7 ??= r6.getPropertyOptions(t5), !((i7.hasChanged ?? m)(h4, s5) || i7.useDefault && i7.reflect && h4 === this._$Ej?.get(t5) && !this.hasAttribute(r6._$Eu(t5, i7)))) return;
-      this.C(t5, s5, i7);
+      if (false === e5 && (h4 = this[t7]), i7 ??= r6.getPropertyOptions(t7), !((i7.hasChanged ?? m)(h4, s5) || i7.useDefault && i7.reflect && h4 === this._$Ej?.get(t7) && !this.hasAttribute(r6._$Eu(t7, i7)))) return;
+      this.C(t7, s5, i7);
     }
     false === this.isUpdatePending && (this._$ES = this._$EP());
   }
-  C(t5, s5, { useDefault: i7, reflect: e5, wrapped: h4 }, r6) {
-    i7 && !(this._$Ej ??= /* @__PURE__ */ new Map()).has(t5) && (this._$Ej.set(t5, r6 ?? s5 ?? this[t5]), true !== h4 || void 0 !== r6) || (this._$AL.has(t5) || (this.hasUpdated || i7 || (s5 = void 0), this._$AL.set(t5, s5)), true === e5 && this._$Em !== t5 && (this._$Eq ??= /* @__PURE__ */ new Set()).add(t5));
+  C(t7, s5, { useDefault: i7, reflect: e5, wrapped: h4 }, r6) {
+    i7 && !(this._$Ej ??= /* @__PURE__ */ new Map()).has(t7) && (this._$Ej.set(t7, r6 ?? s5 ?? this[t7]), true !== h4 || void 0 !== r6) || (this._$AL.has(t7) || (this.hasUpdated || i7 || (s5 = void 0), this._$AL.set(t7, s5)), true === e5 && this._$Em !== t7 && (this._$Eq ??= /* @__PURE__ */ new Set()).add(t7));
   }
   async _$EP() {
     this.isUpdatePending = true;
     try {
       await this._$ES;
-    } catch (t6) {
-      Promise.reject(t6);
+    } catch (t8) {
+      Promise.reject(t8);
     }
-    const t5 = this.scheduleUpdate();
-    return null != t5 && await t5, !this.isUpdatePending;
+    const t7 = this.scheduleUpdate();
+    return null != t7 && await t7, !this.isUpdatePending;
   }
   scheduleUpdate() {
     return this.performUpdate();
@@ -897,28 +897,28 @@ var g = class extends (globalThis.HTMLElement ?? HTMLElementShimWithRealType) {
     if (!this.isUpdatePending) return;
     if (!this.hasUpdated) {
       if (this.renderRoot ??= this.createRenderRoot(), this._$Ep) {
-        for (const [t7, s6] of this._$Ep) this[t7] = s6;
+        for (const [t9, s6] of this._$Ep) this[t9] = s6;
         this._$Ep = void 0;
       }
-      const t6 = this.constructor.elementProperties;
-      if (t6.size > 0) for (const [s6, i7] of t6) {
-        const { wrapped: t7 } = i7, e5 = this[s6];
-        true !== t7 || this._$AL.has(s6) || void 0 === e5 || this.C(s6, void 0, i7, e5);
+      const t8 = this.constructor.elementProperties;
+      if (t8.size > 0) for (const [s6, i7] of t8) {
+        const { wrapped: t9 } = i7, e5 = this[s6];
+        true !== t9 || this._$AL.has(s6) || void 0 === e5 || this.C(s6, void 0, i7, e5);
       }
     }
-    let t5 = false;
+    let t7 = false;
     const s5 = this._$AL;
     try {
-      t5 = this.shouldUpdate(s5), t5 ? (this.willUpdate(s5), this._$EO?.forEach((t6) => t6.hostUpdate?.()), this.update(s5)) : this._$EM();
+      t7 = this.shouldUpdate(s5), t7 ? (this.willUpdate(s5), this._$EO?.forEach((t8) => t8.hostUpdate?.()), this.update(s5)) : this._$EM();
     } catch (s6) {
-      throw t5 = false, this._$EM(), s6;
+      throw t7 = false, this._$EM(), s6;
     }
-    t5 && this._$AE(s5);
+    t7 && this._$AE(s5);
   }
-  willUpdate(t5) {
+  willUpdate(t7) {
   }
-  _$AE(t5) {
-    this._$EO?.forEach((t6) => t6.hostUpdated?.()), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t5)), this.updated(t5);
+  _$AE(t7) {
+    this._$EO?.forEach((t8) => t8.hostUpdated?.()), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t7)), this.updated(t7);
   }
   _$EM() {
     this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = false;
@@ -929,33 +929,33 @@ var g = class extends (globalThis.HTMLElement ?? HTMLElementShimWithRealType) {
   getUpdateComplete() {
     return this._$ES;
   }
-  shouldUpdate(t5) {
+  shouldUpdate(t7) {
     return true;
   }
-  update(t5) {
-    this._$Eq &&= this._$Eq.forEach((t6) => this._$ET(t6, this[t6])), this._$EM();
+  update(t7) {
+    this._$Eq &&= this._$Eq.forEach((t8) => this._$ET(t8, this[t8])), this._$EM();
   }
-  updated(t5) {
+  updated(t7) {
   }
-  firstUpdated(t5) {
+  firstUpdated(t7) {
   }
 };
 g.elementStyles = [], g.shadowRootOptions = { mode: "open" }, g[f("elementProperties")] = /* @__PURE__ */ new Map(), g[f("finalized")] = /* @__PURE__ */ new Map(), u?.({ ReactiveElement: g }), (l.reactiveElementVersions ??= []).push("2.1.2");
 
-// ../../node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/lit-html.js
+// node_modules/lit-html/lit-html.js
 var t2 = globalThis;
-var i2 = (t5) => t5;
+var i2 = (t7) => t7;
 var s2 = t2.trustedTypes;
-var e2 = s2 ? s2.createPolicy("lit-html", { createHTML: (t5) => t5 }) : void 0;
+var e2 = s2 ? s2.createPolicy("lit-html", { createHTML: (t7) => t7 }) : void 0;
 var h2 = "$lit$";
 var o3 = `lit$${Math.random().toFixed(9).slice(2)}$`;
 var n3 = "?" + o3;
 var r3 = `<${n3}>`;
 var l2 = document;
 var c3 = () => l2.createComment("");
-var a2 = (t5) => null === t5 || "object" != typeof t5 && "function" != typeof t5;
+var a2 = (t7) => null === t7 || "object" != typeof t7 && "function" != typeof t7;
 var u2 = Array.isArray;
-var d2 = (t5) => u2(t5) || "function" == typeof t5?.[Symbol.iterator];
+var d2 = (t7) => u2(t7) || "function" == typeof t7?.[Symbol.iterator];
 var f2 = "[ 	\n\f\r]";
 var v = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
 var _ = /-->/g;
@@ -965,7 +965,7 @@ var p2 = RegExp(`>|${f2}(?:([^\\s"'>=/]+)(${f2}*=${f2}*(?:[^
 var g2 = /'/g;
 var $ = /"/g;
 var y2 = /^(?:script|style|textarea|title)$/i;
-var x = (t5) => (i7, ...s5) => ({ _$litType$: t5, strings: i7, values: s5 });
+var x = (t7) => (i7, ...s5) => ({ _$litType$: t7, strings: i7, values: s5 });
 var b2 = x(1);
 var w = x(2);
 var T = x(3);
@@ -973,68 +973,68 @@ var E = Symbol.for("lit-noChange");
 var A = Symbol.for("lit-nothing");
 var C = /* @__PURE__ */ new WeakMap();
 var P = l2.createTreeWalker(l2, 129);
-function V(t5, i7) {
-  if (!u2(t5) || !t5.hasOwnProperty("raw")) throw Error("invalid template strings array");
+function V(t7, i7) {
+  if (!u2(t7) || !t7.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return void 0 !== e2 ? e2.createHTML(i7) : i7;
 }
-var N = (t5, i7) => {
-  const s5 = t5.length - 1, e5 = [];
+var N = (t7, i7) => {
+  const s5 = t7.length - 1, e5 = [];
   let n6, l3 = 2 === i7 ? "<svg>" : 3 === i7 ? "<math>" : "", c5 = v;
   for (let i8 = 0; i8 < s5; i8++) {
-    const s6 = t5[i8];
+    const s6 = t7[i8];
     let a3, u5, d3 = -1, f3 = 0;
     for (; f3 < s6.length && (c5.lastIndex = f3, u5 = c5.exec(s6), null !== u5); ) f3 = c5.lastIndex, c5 === v ? "!--" === u5[1] ? c5 = _ : void 0 !== u5[1] ? c5 = m2 : void 0 !== u5[2] ? (y2.test(u5[2]) && (n6 = RegExp("</" + u5[2], "g")), c5 = p2) : void 0 !== u5[3] && (c5 = p2) : c5 === p2 ? ">" === u5[0] ? (c5 = n6 ?? v, d3 = -1) : void 0 === u5[1] ? d3 = -2 : (d3 = c5.lastIndex - u5[2].length, a3 = u5[1], c5 = void 0 === u5[3] ? p2 : '"' === u5[3] ? $ : g2) : c5 === $ || c5 === g2 ? c5 = p2 : c5 === _ || c5 === m2 ? c5 = v : (c5 = p2, n6 = void 0);
-    const x2 = c5 === p2 && t5[i8 + 1].startsWith("/>") ? " " : "";
+    const x2 = c5 === p2 && t7[i8 + 1].startsWith("/>") ? " " : "";
     l3 += c5 === v ? s6 + r3 : d3 >= 0 ? (e5.push(a3), s6.slice(0, d3) + h2 + s6.slice(d3) + o3 + x2) : s6 + o3 + (-2 === d3 ? i8 : x2);
   }
-  return [V(t5, l3 + (t5[s5] || "<?>") + (2 === i7 ? "</svg>" : 3 === i7 ? "</math>" : "")), e5];
+  return [V(t7, l3 + (t7[s5] || "<?>") + (2 === i7 ? "</svg>" : 3 === i7 ? "</math>" : "")), e5];
 };
 var S2 = class _S {
-  constructor({ strings: t5, _$litType$: i7 }, e5) {
+  constructor({ strings: t7, _$litType$: i7 }, e5) {
     let r6;
     this.parts = [];
     let l3 = 0, a3 = 0;
-    const u5 = t5.length - 1, d3 = this.parts, [f3, v3] = N(t5, i7);
+    const u5 = t7.length - 1, d3 = this.parts, [f3, v3] = N(t7, i7);
     if (this.el = _S.createElement(f3, e5), P.currentNode = this.el.content, 2 === i7 || 3 === i7) {
-      const t6 = this.el.content.firstChild;
-      t6.replaceWith(...t6.childNodes);
+      const t8 = this.el.content.firstChild;
+      t8.replaceWith(...t8.childNodes);
     }
     for (; null !== (r6 = P.nextNode()) && d3.length < u5; ) {
       if (1 === r6.nodeType) {
-        if (r6.hasAttributes()) for (const t6 of r6.getAttributeNames()) if (t6.endsWith(h2)) {
-          const i8 = v3[a3++], s5 = r6.getAttribute(t6).split(o3), e6 = /([.?@])?(.*)/.exec(i8);
-          d3.push({ type: 1, index: l3, name: e6[2], strings: s5, ctor: "." === e6[1] ? I : "?" === e6[1] ? L : "@" === e6[1] ? z : H }), r6.removeAttribute(t6);
-        } else t6.startsWith(o3) && (d3.push({ type: 6, index: l3 }), r6.removeAttribute(t6));
+        if (r6.hasAttributes()) for (const t8 of r6.getAttributeNames()) if (t8.endsWith(h2)) {
+          const i8 = v3[a3++], s5 = r6.getAttribute(t8).split(o3), e6 = /([.?@])?(.*)/.exec(i8);
+          d3.push({ type: 1, index: l3, name: e6[2], strings: s5, ctor: "." === e6[1] ? I : "?" === e6[1] ? L : "@" === e6[1] ? z : H }), r6.removeAttribute(t8);
+        } else t8.startsWith(o3) && (d3.push({ type: 6, index: l3 }), r6.removeAttribute(t8));
         if (y2.test(r6.tagName)) {
-          const t6 = r6.textContent.split(o3), i8 = t6.length - 1;
+          const t8 = r6.textContent.split(o3), i8 = t8.length - 1;
           if (i8 > 0) {
             r6.textContent = s2 ? s2.emptyScript : "";
-            for (let s5 = 0; s5 < i8; s5++) r6.append(t6[s5], c3()), P.nextNode(), d3.push({ type: 2, index: ++l3 });
-            r6.append(t6[i8], c3());
+            for (let s5 = 0; s5 < i8; s5++) r6.append(t8[s5], c3()), P.nextNode(), d3.push({ type: 2, index: ++l3 });
+            r6.append(t8[i8], c3());
           }
         }
       } else if (8 === r6.nodeType) if (r6.data === n3) d3.push({ type: 2, index: l3 });
       else {
-        let t6 = -1;
-        for (; -1 !== (t6 = r6.data.indexOf(o3, t6 + 1)); ) d3.push({ type: 7, index: l3 }), t6 += o3.length - 1;
+        let t8 = -1;
+        for (; -1 !== (t8 = r6.data.indexOf(o3, t8 + 1)); ) d3.push({ type: 7, index: l3 }), t8 += o3.length - 1;
       }
       l3++;
     }
   }
-  static createElement(t5, i7) {
+  static createElement(t7, i7) {
     const s5 = l2.createElement("template");
-    return s5.innerHTML = t5, s5;
+    return s5.innerHTML = t7, s5;
   }
 };
-function M(t5, i7, s5 = t5, e5) {
+function M(t7, i7, s5 = t7, e5) {
   if (i7 === E) return i7;
   let h4 = void 0 !== e5 ? s5._$Co?.[e5] : s5._$Cl;
   const o7 = a2(i7) ? void 0 : i7._$litDirective$;
-  return h4?.constructor !== o7 && (h4?._$AO?.(false), void 0 === o7 ? h4 = void 0 : (h4 = new o7(t5), h4._$AT(t5, s5, e5)), void 0 !== e5 ? (s5._$Co ??= [])[e5] = h4 : s5._$Cl = h4), void 0 !== h4 && (i7 = M(t5, h4._$AS(t5, i7.values), h4, e5)), i7;
+  return h4?.constructor !== o7 && (h4?._$AO?.(false), void 0 === o7 ? h4 = void 0 : (h4 = new o7(t7), h4._$AT(t7, s5, e5)), void 0 !== e5 ? (s5._$Co ??= [])[e5] = h4 : s5._$Cl = h4), void 0 !== h4 && (i7 = M(t7, h4._$AS(t7, i7.values), h4, e5)), i7;
 }
 var R = class {
-  constructor(t5, i7) {
-    this._$AV = [], this._$AN = void 0, this._$AD = t5, this._$AM = i7;
+  constructor(t7, i7) {
+    this._$AV = [], this._$AN = void 0, this._$AD = t7, this._$AM = i7;
   }
   get parentNode() {
     return this._$AM.parentNode;
@@ -1042,35 +1042,35 @@ var R = class {
   get _$AU() {
     return this._$AM._$AU;
   }
-  u(t5) {
-    const { el: { content: i7 }, parts: s5 } = this._$AD, e5 = (t5?.creationScope ?? l2).importNode(i7, true);
+  u(t7) {
+    const { el: { content: i7 }, parts: s5 } = this._$AD, e5 = (t7?.creationScope ?? l2).importNode(i7, true);
     P.currentNode = e5;
     let h4 = P.nextNode(), o7 = 0, n6 = 0, r6 = s5[0];
     for (; void 0 !== r6; ) {
       if (o7 === r6.index) {
         let i8;
-        2 === r6.type ? i8 = new k(h4, h4.nextSibling, this, t5) : 1 === r6.type ? i8 = new r6.ctor(h4, r6.name, r6.strings, this, t5) : 6 === r6.type && (i8 = new Z(h4, this, t5)), this._$AV.push(i8), r6 = s5[++n6];
+        2 === r6.type ? i8 = new k(h4, h4.nextSibling, this, t7) : 1 === r6.type ? i8 = new r6.ctor(h4, r6.name, r6.strings, this, t7) : 6 === r6.type && (i8 = new Z(h4, this, t7)), this._$AV.push(i8), r6 = s5[++n6];
       }
       o7 !== r6?.index && (h4 = P.nextNode(), o7++);
     }
     return P.currentNode = l2, e5;
   }
-  p(t5) {
+  p(t7) {
     let i7 = 0;
-    for (const s5 of this._$AV) void 0 !== s5 && (void 0 !== s5.strings ? (s5._$AI(t5, s5, i7), i7 += s5.strings.length - 2) : s5._$AI(t5[i7])), i7++;
+    for (const s5 of this._$AV) void 0 !== s5 && (void 0 !== s5.strings ? (s5._$AI(t7, s5, i7), i7 += s5.strings.length - 2) : s5._$AI(t7[i7])), i7++;
   }
 };
 var k = class _k {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
-  constructor(t5, i7, s5, e5) {
-    this.type = 2, this._$AH = A, this._$AN = void 0, this._$AA = t5, this._$AB = i7, this._$AM = s5, this.options = e5, this._$Cv = e5?.isConnected ?? true;
+  constructor(t7, i7, s5, e5) {
+    this.type = 2, this._$AH = A, this._$AN = void 0, this._$AA = t7, this._$AB = i7, this._$AM = s5, this.options = e5, this._$Cv = e5?.isConnected ?? true;
   }
   get parentNode() {
-    let t5 = this._$AA.parentNode;
+    let t7 = this._$AA.parentNode;
     const i7 = this._$AM;
-    return void 0 !== i7 && 11 === t5?.nodeType && (t5 = i7.parentNode), t5;
+    return void 0 !== i7 && 11 === t7?.nodeType && (t7 = i7.parentNode), t7;
   }
   get startNode() {
     return this._$AA;
@@ -1078,45 +1078,45 @@ var k = class _k {
   get endNode() {
     return this._$AB;
   }
-  _$AI(t5, i7 = this) {
-    t5 = M(this, t5, i7), a2(t5) ? t5 === A || null == t5 || "" === t5 ? (this._$AH !== A && this._$AR(), this._$AH = A) : t5 !== this._$AH && t5 !== E && this._(t5) : void 0 !== t5._$litType$ ? this.$(t5) : void 0 !== t5.nodeType ? this.T(t5) : d2(t5) ? this.k(t5) : this._(t5);
+  _$AI(t7, i7 = this) {
+    t7 = M(this, t7, i7), a2(t7) ? t7 === A || null == t7 || "" === t7 ? (this._$AH !== A && this._$AR(), this._$AH = A) : t7 !== this._$AH && t7 !== E && this._(t7) : void 0 !== t7._$litType$ ? this.$(t7) : void 0 !== t7.nodeType ? this.T(t7) : d2(t7) ? this.k(t7) : this._(t7);
   }
-  O(t5) {
-    return this._$AA.parentNode.insertBefore(t5, this._$AB);
+  O(t7) {
+    return this._$AA.parentNode.insertBefore(t7, this._$AB);
   }
-  T(t5) {
-    this._$AH !== t5 && (this._$AR(), this._$AH = this.O(t5));
+  T(t7) {
+    this._$AH !== t7 && (this._$AR(), this._$AH = this.O(t7));
   }
-  _(t5) {
-    this._$AH !== A && a2(this._$AH) ? this._$AA.nextSibling.data = t5 : this.T(l2.createTextNode(t5)), this._$AH = t5;
+  _(t7) {
+    this._$AH !== A && a2(this._$AH) ? this._$AA.nextSibling.data = t7 : this.T(l2.createTextNode(t7)), this._$AH = t7;
   }
-  $(t5) {
-    const { values: i7, _$litType$: s5 } = t5, e5 = "number" == typeof s5 ? this._$AC(t5) : (void 0 === s5.el && (s5.el = S2.createElement(V(s5.h, s5.h[0]), this.options)), s5);
+  $(t7) {
+    const { values: i7, _$litType$: s5 } = t7, e5 = "number" == typeof s5 ? this._$AC(t7) : (void 0 === s5.el && (s5.el = S2.createElement(V(s5.h, s5.h[0]), this.options)), s5);
     if (this._$AH?._$AD === e5) this._$AH.p(i7);
     else {
-      const t6 = new R(e5, this), s6 = t6.u(this.options);
-      t6.p(i7), this.T(s6), this._$AH = t6;
+      const t8 = new R(e5, this), s6 = t8.u(this.options);
+      t8.p(i7), this.T(s6), this._$AH = t8;
     }
   }
-  _$AC(t5) {
-    let i7 = C.get(t5.strings);
-    return void 0 === i7 && C.set(t5.strings, i7 = new S2(t5)), i7;
+  _$AC(t7) {
+    let i7 = C.get(t7.strings);
+    return void 0 === i7 && C.set(t7.strings, i7 = new S2(t7)), i7;
   }
-  k(t5) {
+  k(t7) {
     u2(this._$AH) || (this._$AH = [], this._$AR());
     const i7 = this._$AH;
     let s5, e5 = 0;
-    for (const h4 of t5) e5 === i7.length ? i7.push(s5 = new _k(this.O(c3()), this.O(c3()), this, this.options)) : s5 = i7[e5], s5._$AI(h4), e5++;
+    for (const h4 of t7) e5 === i7.length ? i7.push(s5 = new _k(this.O(c3()), this.O(c3()), this, this.options)) : s5 = i7[e5], s5._$AI(h4), e5++;
     e5 < i7.length && (this._$AR(s5 && s5._$AB.nextSibling, e5), i7.length = e5);
   }
-  _$AR(t5 = this._$AA.nextSibling, s5) {
-    for (this._$AP?.(false, true, s5); t5 !== this._$AB; ) {
-      const s6 = i2(t5).nextSibling;
-      i2(t5).remove(), t5 = s6;
+  _$AR(t7 = this._$AA.nextSibling, s5) {
+    for (this._$AP?.(false, true, s5); t7 !== this._$AB; ) {
+      const s6 = i2(t7).nextSibling;
+      i2(t7).remove(), t7 = s6;
     }
   }
-  setConnected(t5) {
-    void 0 === this._$AM && (this._$Cv = t5, this._$AP?.(t5));
+  setConnected(t7) {
+    void 0 === this._$AM && (this._$Cv = t7, this._$AP?.(t7));
   }
 };
 var H = class {
@@ -1126,90 +1126,90 @@ var H = class {
   get _$AU() {
     return this._$AM._$AU;
   }
-  constructor(t5, i7, s5, e5, h4) {
-    this.type = 1, this._$AH = A, this._$AN = void 0, this.element = t5, this.name = i7, this._$AM = e5, this.options = h4, s5.length > 2 || "" !== s5[0] || "" !== s5[1] ? (this._$AH = Array(s5.length - 1).fill(new String()), this.strings = s5) : this._$AH = A;
+  constructor(t7, i7, s5, e5, h4) {
+    this.type = 1, this._$AH = A, this._$AN = void 0, this.element = t7, this.name = i7, this._$AM = e5, this.options = h4, s5.length > 2 || "" !== s5[0] || "" !== s5[1] ? (this._$AH = Array(s5.length - 1).fill(new String()), this.strings = s5) : this._$AH = A;
   }
-  _$AI(t5, i7 = this, s5, e5) {
+  _$AI(t7, i7 = this, s5, e5) {
     const h4 = this.strings;
     let o7 = false;
-    if (void 0 === h4) t5 = M(this, t5, i7, 0), o7 = !a2(t5) || t5 !== this._$AH && t5 !== E, o7 && (this._$AH = t5);
+    if (void 0 === h4) t7 = M(this, t7, i7, 0), o7 = !a2(t7) || t7 !== this._$AH && t7 !== E, o7 && (this._$AH = t7);
     else {
-      const e6 = t5;
+      const e6 = t7;
       let n6, r6;
-      for (t5 = h4[0], n6 = 0; n6 < h4.length - 1; n6++) r6 = M(this, e6[s5 + n6], i7, n6), r6 === E && (r6 = this._$AH[n6]), o7 ||= !a2(r6) || r6 !== this._$AH[n6], r6 === A ? t5 = A : t5 !== A && (t5 += (r6 ?? "") + h4[n6 + 1]), this._$AH[n6] = r6;
+      for (t7 = h4[0], n6 = 0; n6 < h4.length - 1; n6++) r6 = M(this, e6[s5 + n6], i7, n6), r6 === E && (r6 = this._$AH[n6]), o7 ||= !a2(r6) || r6 !== this._$AH[n6], r6 === A ? t7 = A : t7 !== A && (t7 += (r6 ?? "") + h4[n6 + 1]), this._$AH[n6] = r6;
     }
-    o7 && !e5 && this.j(t5);
+    o7 && !e5 && this.j(t7);
   }
-  j(t5) {
-    t5 === A ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t5 ?? "");
+  j(t7) {
+    t7 === A ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t7 ?? "");
   }
 };
 var I = class extends H {
   constructor() {
     super(...arguments), this.type = 3;
   }
-  j(t5) {
-    this.element[this.name] = t5 === A ? void 0 : t5;
+  j(t7) {
+    this.element[this.name] = t7 === A ? void 0 : t7;
   }
 };
 var L = class extends H {
   constructor() {
     super(...arguments), this.type = 4;
   }
-  j(t5) {
-    this.element.toggleAttribute(this.name, !!t5 && t5 !== A);
+  j(t7) {
+    this.element.toggleAttribute(this.name, !!t7 && t7 !== A);
   }
 };
 var z = class extends H {
-  constructor(t5, i7, s5, e5, h4) {
-    super(t5, i7, s5, e5, h4), this.type = 5;
+  constructor(t7, i7, s5, e5, h4) {
+    super(t7, i7, s5, e5, h4), this.type = 5;
   }
-  _$AI(t5, i7 = this) {
-    if ((t5 = M(this, t5, i7, 0) ?? A) === E) return;
-    const s5 = this._$AH, e5 = t5 === A && s5 !== A || t5.capture !== s5.capture || t5.once !== s5.once || t5.passive !== s5.passive, h4 = t5 !== A && (s5 === A || e5);
-    e5 && this.element.removeEventListener(this.name, this, s5), h4 && this.element.addEventListener(this.name, this, t5), this._$AH = t5;
+  _$AI(t7, i7 = this) {
+    if ((t7 = M(this, t7, i7, 0) ?? A) === E) return;
+    const s5 = this._$AH, e5 = t7 === A && s5 !== A || t7.capture !== s5.capture || t7.once !== s5.once || t7.passive !== s5.passive, h4 = t7 !== A && (s5 === A || e5);
+    e5 && this.element.removeEventListener(this.name, this, s5), h4 && this.element.addEventListener(this.name, this, t7), this._$AH = t7;
   }
-  handleEvent(t5) {
-    "function" == typeof this._$AH ? this._$AH.call(this.options?.host ?? this.element, t5) : this._$AH.handleEvent(t5);
+  handleEvent(t7) {
+    "function" == typeof this._$AH ? this._$AH.call(this.options?.host ?? this.element, t7) : this._$AH.handleEvent(t7);
   }
 };
 var Z = class {
-  constructor(t5, i7, s5) {
-    this.element = t5, this.type = 6, this._$AN = void 0, this._$AM = i7, this.options = s5;
+  constructor(t7, i7, s5) {
+    this.element = t7, this.type = 6, this._$AN = void 0, this._$AM = i7, this.options = s5;
   }
   get _$AU() {
     return this._$AM._$AU;
   }
-  _$AI(t5) {
-    M(this, t5);
+  _$AI(t7) {
+    M(this, t7);
   }
 };
 var j = { M: h2, P: o3, A: n3, C: 1, L: N, R, D: d2, V: M, I: k, H, N: L, U: z, B: I, F: Z };
 var B = t2.litHtmlPolyfillSupport;
 B?.(S2, k), (t2.litHtmlVersions ??= []).push("3.3.3");
-var D = (t5, i7, s5) => {
+var D = (t7, i7, s5) => {
   const e5 = s5?.renderBefore ?? i7;
   let h4 = e5._$litPart$;
   if (void 0 === h4) {
-    const t6 = s5?.renderBefore ?? null;
-    e5._$litPart$ = h4 = new k(i7.insertBefore(c3(), t6), t6, void 0, s5 ?? {});
+    const t8 = s5?.renderBefore ?? null;
+    e5._$litPart$ = h4 = new k(i7.insertBefore(c3(), t8), t8, void 0, s5 ?? {});
   }
-  return h4._$AI(t5), h4;
+  return h4._$AI(t7), h4;
 };
 
-// ../../node_modules/.pnpm/lit-element@4.2.2/node_modules/lit-element/lit-element.js
+// node_modules/lit-element/lit-element.js
 var s3 = globalThis;
 var i3 = class extends g {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
   createRenderRoot() {
-    const t5 = super.createRenderRoot();
-    return this.renderOptions.renderBefore ??= t5.firstChild, t5;
+    const t7 = super.createRenderRoot();
+    return this.renderOptions.renderBefore ??= t7.firstChild, t7;
   }
-  update(t5) {
+  update(t7) {
     const r6 = this.render();
-    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t5), this._$Do = D(r6, this.renderRoot, this.renderOptions);
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t7), this._$Do = D(r6, this.renderRoot, this.renderOptions);
   }
   connectedCallback() {
     super.connectedCallback(), this._$Do?.setConnected(true);
@@ -1226,69 +1226,69 @@ var o4 = s3.litElementPolyfillSupport;
 o4?.({ LitElement: i3 });
 (s3.litElementVersions ??= []).push("4.2.2");
 
-// ../../node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/node/decorators/property.js
+// node_modules/@lit/reactive-element/node/decorators/property.js
 var o5 = { attribute: true, type: String, converter: b, reflect: false, hasChanged: m };
-var r4 = (t5 = o5, e5, r6) => {
+var r4 = (t7 = o5, e5, r6) => {
   const { kind: n6, metadata: i7 } = r6;
   let s5 = globalThis.litPropertyMetadata.get(i7);
-  if (void 0 === s5 && globalThis.litPropertyMetadata.set(i7, s5 = /* @__PURE__ */ new Map()), "setter" === n6 && ((t5 = Object.create(t5)).wrapped = true), s5.set(r6.name, t5), "accessor" === n6) {
+  if (void 0 === s5 && globalThis.litPropertyMetadata.set(i7, s5 = /* @__PURE__ */ new Map()), "setter" === n6 && ((t7 = Object.create(t7)).wrapped = true), s5.set(r6.name, t7), "accessor" === n6) {
     const { name: o7 } = r6;
     return { set(r7) {
       const n7 = e5.get.call(this);
-      e5.set.call(this, r7), this.requestUpdate(o7, n7, t5, true, r7);
+      e5.set.call(this, r7), this.requestUpdate(o7, n7, t7, true, r7);
     }, init(e6) {
-      return void 0 !== e6 && this.C(o7, void 0, t5, e6), e6;
+      return void 0 !== e6 && this.C(o7, void 0, t7, e6), e6;
     } };
   }
   if ("setter" === n6) {
     const { name: o7 } = r6;
     return function(r7) {
       const n7 = this[o7];
-      e5.call(this, r7), this.requestUpdate(o7, n7, t5, true, r7);
+      e5.call(this, r7), this.requestUpdate(o7, n7, t7, true, r7);
     };
   }
   throw Error("Unsupported decorator location: " + n6);
 };
-function n4(t5) {
-  return (e5, o7) => "object" == typeof o7 ? r4(t5, e5, o7) : ((t6, e6, o8) => {
+function n4(t7) {
+  return (e5, o7) => "object" == typeof o7 ? r4(t7, e5, o7) : ((t8, e6, o8) => {
     const r6 = e6.hasOwnProperty(o8);
-    return e6.constructor.createProperty(o8, t6), r6 ? Object.getOwnPropertyDescriptor(e6, o8) : void 0;
-  })(t5, e5, o7);
+    return e6.constructor.createProperty(o8, t8), r6 ? Object.getOwnPropertyDescriptor(e6, o8) : void 0;
+  })(t7, e5, o7);
 }
 
-// ../../node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/node/decorators/state.js
+// node_modules/@lit/reactive-element/node/decorators/state.js
 function r5(r6) {
   return n4({ ...r6, state: true, attribute: false });
 }
 
-// ../../node_modules/.pnpm/@outfitkit+core@file+..+outfitkit/node_modules/@outfitkit/core/dist/define.js
+// ../outfitkit/dist/define.js
 function define(tag, ctor) {
   if (typeof customElements !== "undefined" && !customElements.get(tag)) {
     customElements.define(tag, ctor);
   }
 }
 
-// ../../node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/directive.js
+// node_modules/lit-html/directive.js
 var t3 = { ATTRIBUTE: 1, CHILD: 2, PROPERTY: 3, BOOLEAN_ATTRIBUTE: 4, EVENT: 5, ELEMENT: 6 };
-var e4 = (t5) => (...e5) => ({ _$litDirective$: t5, values: e5 });
+var e4 = (t7) => (...e5) => ({ _$litDirective$: t7, values: e5 });
 var i4 = class {
-  constructor(t5) {
+  constructor(t7) {
   }
   get _$AU() {
     return this._$AM._$AU;
   }
-  _$AT(t5, e5, i7) {
-    this._$Ct = t5, this._$AM = e5, this._$Ci = i7;
+  _$AT(t7, e5, i7) {
+    this._$Ct = t7, this._$AM = e5, this._$Ci = i7;
   }
-  _$AS(t5, e5) {
-    return this.update(t5, e5);
+  _$AS(t7, e5) {
+    return this.update(t7, e5);
   }
-  update(t5, e5) {
+  update(t7, e5) {
     return this.render(...e5);
   }
 };
 
-// ../../node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/directive-helpers.js
+// node_modules/lit-html/directive-helpers.js
 var { I: t4 } = j;
 var i5 = (o7) => o7;
 var s4 = () => document.createComment("");
@@ -1298,52 +1298,52 @@ var v2 = (o7, n6, e5) => {
     const i7 = l3.insertBefore(s4(), d3), n7 = l3.insertBefore(s4(), d3);
     e5 = new t4(i7, n7, o7, o7.options);
   } else {
-    const t5 = e5._$AB.nextSibling, n7 = e5._$AM, c5 = n7 !== o7;
+    const t7 = e5._$AB.nextSibling, n7 = e5._$AM, c5 = n7 !== o7;
     if (c5) {
-      let t6;
-      e5._$AQ?.(o7), e5._$AM = o7, void 0 !== e5._$AP && (t6 = o7._$AU) !== n7._$AU && e5._$AP(t6);
+      let t8;
+      e5._$AQ?.(o7), e5._$AM = o7, void 0 !== e5._$AP && (t8 = o7._$AU) !== n7._$AU && e5._$AP(t8);
     }
-    if (t5 !== d3 || c5) {
+    if (t7 !== d3 || c5) {
       let o8 = e5._$AA;
-      for (; o8 !== t5; ) {
-        const t6 = i5(o8).nextSibling;
-        i5(l3).insertBefore(o8, d3), o8 = t6;
+      for (; o8 !== t7; ) {
+        const t8 = i5(o8).nextSibling;
+        i5(l3).insertBefore(o8, d3), o8 = t8;
       }
     }
   }
   return e5;
 };
-var u3 = (o7, t5, i7 = o7) => (o7._$AI(t5, i7), o7);
+var u3 = (o7, t7, i7 = o7) => (o7._$AI(t7, i7), o7);
 var m3 = {};
-var p3 = (o7, t5 = m3) => o7._$AH = t5;
+var p3 = (o7, t7 = m3) => o7._$AH = t7;
 var M2 = (o7) => o7._$AH;
 var h3 = (o7) => {
   o7._$AR(), o7._$AA.remove();
 };
 
-// ../../node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/directives/repeat.js
-var u4 = (e5, s5, t5) => {
+// node_modules/lit-html/directives/repeat.js
+var u4 = (e5, s5, t7) => {
   const r6 = /* @__PURE__ */ new Map();
-  for (let l3 = s5; l3 <= t5; l3++) r6.set(e5[l3], l3);
+  for (let l3 = s5; l3 <= t7; l3++) r6.set(e5[l3], l3);
   return r6;
 };
 var c4 = e4(class extends i4 {
   constructor(e5) {
     if (super(e5), e5.type !== t3.CHILD) throw Error("repeat() can only be used in text expressions");
   }
-  dt(e5, s5, t5) {
+  dt(e5, s5, t7) {
     let r6;
-    void 0 === t5 ? t5 = s5 : void 0 !== s5 && (r6 = s5);
+    void 0 === t7 ? t7 = s5 : void 0 !== s5 && (r6 = s5);
     const l3 = [], o7 = [];
     let i7 = 0;
-    for (const s6 of e5) l3[i7] = r6 ? r6(s6, i7) : i7, o7[i7] = t5(s6, i7), i7++;
+    for (const s6 of e5) l3[i7] = r6 ? r6(s6, i7) : i7, o7[i7] = t7(s6, i7), i7++;
     return { values: o7, keys: l3 };
   }
-  render(e5, s5, t5) {
-    return this.dt(e5, s5, t5).values;
+  render(e5, s5, t7) {
+    return this.dt(e5, s5, t7).values;
   }
-  update(s5, [t5, r6, c5]) {
-    const d3 = M2(s5), { values: p4, keys: a3 } = this.dt(t5, r6, c5);
+  update(s5, [t7, r6, c5]) {
+    const d3 = M2(s5), { values: p4, keys: a3 } = this.dt(t7, r6, c5);
     if (!Array.isArray(d3)) return this.ut = a3, p4;
     const h4 = this.ut ??= [], v3 = [];
     let m4, y3, x2 = 0, j2 = d3.length - 1, k2 = 0, w2 = p4.length - 1;
@@ -1354,11 +1354,11 @@ var c4 = e4(class extends i4 {
     else if (h4[x2] === a3[w2]) v3[w2] = u3(d3[x2], p4[w2]), v2(s5, v3[w2 + 1], d3[x2]), x2++, w2--;
     else if (h4[j2] === a3[k2]) v3[k2] = u3(d3[j2], p4[k2]), v2(s5, d3[x2], d3[j2]), j2--, k2++;
     else if (void 0 === m4 && (m4 = u4(a3, k2, w2), y3 = u4(h4, x2, j2)), m4.has(h4[x2])) if (m4.has(h4[j2])) {
-      const e5 = y3.get(a3[k2]), t6 = void 0 !== e5 ? d3[e5] : null;
-      if (null === t6) {
+      const e5 = y3.get(a3[k2]), t8 = void 0 !== e5 ? d3[e5] : null;
+      if (null === t8) {
         const e6 = v2(s5, d3[x2]);
         u3(e6, p4[k2]), v3[k2] = e6;
-      } else v3[k2] = u3(t6, p4[k2]), v2(s5, d3[x2], t6), d3[e5] = null;
+      } else v3[k2] = u3(t8, p4[k2]), v2(s5, d3[x2], t8), d3[e5] = null;
       k2++;
     } else h3(d3[j2]), j2--;
     else h3(d3[x2]), x2++;
@@ -1374,36 +1374,36 @@ var c4 = e4(class extends i4 {
   }
 });
 
-// ../../node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/directives/style-map.js
+// node_modules/lit-html/directives/style-map.js
 var n5 = "important";
 var i6 = " !" + n5;
 var o6 = e4(class extends i4 {
-  constructor(t5) {
-    if (super(t5), t5.type !== t3.ATTRIBUTE || "style" !== t5.name || t5.strings?.length > 2) throw Error("The `styleMap` directive must be used in the `style` attribute and must be the only part in the attribute.");
+  constructor(t7) {
+    if (super(t7), t7.type !== t3.ATTRIBUTE || "style" !== t7.name || t7.strings?.length > 2) throw Error("The `styleMap` directive must be used in the `style` attribute and must be the only part in the attribute.");
   }
-  render(t5) {
-    return Object.keys(t5).reduce((e5, r6) => {
-      const s5 = t5[r6];
+  render(t7) {
+    return Object.keys(t7).reduce((e5, r6) => {
+      const s5 = t7[r6];
       return null == s5 ? e5 : e5 + `${r6 = r6.includes("-") ? r6 : r6.replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g, "-$&").toLowerCase()}:${s5};`;
     }, "");
   }
   update(e5, [r6]) {
     const { style: s5 } = e5.element;
     if (void 0 === this.ft) return this.ft = new Set(Object.keys(r6)), this.render(r6);
-    for (const t5 of this.ft) null == r6[t5] && (this.ft.delete(t5), t5.includes("-") ? s5.removeProperty(t5) : s5[t5] = null);
-    for (const t5 in r6) {
-      const e6 = r6[t5];
+    for (const t7 of this.ft) null == r6[t7] && (this.ft.delete(t7), t7.includes("-") ? s5.removeProperty(t7) : s5[t7] = null);
+    for (const t7 in r6) {
+      const e6 = r6[t7];
       if (null != e6) {
-        this.ft.add(t5);
+        this.ft.add(t7);
         const r7 = "string" == typeof e6 && e6.endsWith(i6);
-        t5.includes("-") || r7 ? s5.setProperty(t5, r7 ? e6.slice(0, -11) : e6, r7 ? n5 : "") : s5[t5] = e6;
+        t7.includes("-") || r7 ? s5.setProperty(t7, r7 ? e6.slice(0, -11) : e6, r7 ? n5 : "") : s5[t7] = e6;
       }
     }
     return E;
   }
 });
 
-// ../../node_modules/.pnpm/@outfitkit+core@file+..+outfitkit/node_modules/@outfitkit/core/dist/ok-data-table.js
+// ../outfitkit/dist/ok-data-table.js
 var __defProp2 = Object.defineProperty;
 var __decorateClass2 = (decorators, target, key, kind) => {
   var result = void 0;
@@ -1571,12 +1571,15 @@ var OkDataTable = class extends i3 {
 
     /* ── Topbar / cabecera (relieve) ─────────────────────────────────────────────────────── */
     .bar { display: flex; flex-direction: column; gap: 0.6rem; padding: 0.65rem 1rem; border-bottom: 1px solid var(--border-color); background: var(--header-background); }
-    /* Toolbar CONSOLIDADA: TODOS los controles (buscador, filtros, page-size, vistas, columnas,
-     * CSV, ⋮, alta) son hijos directos de UNA sola fila flex que envuelve ELEMENTO A ELEMENTO
-     * (no por bloques): caben en una línea → una línea; los que no caben bajan a la(s) línea(s)
-     * que hagan falta. El cluster derecho se empuja al borde con .tk-spacer (hueco flexible)
-     * solo cuando todo cabe en una línea; al envolver, el spacer se oculta y todo se apila a la
-     * izquierda. */
+    /* Toolbar CONSOLIDADA: TODOS los controles son hijos directos de UNA sola fila flex que
+     * envuelve ELEMENTO A ELEMENTO (no por bloques): caben en una línea → una línea; los que no
+     * caben bajan a la(s) línea(s) que hagan falta. El cluster derecho se empuja al borde con
+     * .tk-spacer (hueco flexible) solo cuando todo cabe en una línea; al envolver, el spacer se
+     * oculta y todo se apila a la izquierda.
+     * ORDEN CANÓNICO (2026-06-22, izquierda→derecha): [buscador] · [filtros en línea] · ‹spacer› ·
+     * [SELECTORES: columnas → filas/página] · [BOTONES: vistas → filtros(funnel) → import → export →
+     * alta → ⋮ → acción primaria]. Es decir: buscador al inicio, filtros en medio, y al final los
+     * selectores (columnas, luego «N por página») seguidos de los botones de acción. */
     .bar-main { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
     .bar-main > ion-button { --padding-start: 0.5rem; --padding-end: 0.5rem; margin: 0; }
     /* Spacer que absorbe el hueco libre en pantallas anchas (empuja el cluster derecho al borde).
@@ -1960,10 +1963,10 @@ var OkDataTable = class extends i3 {
           }
           if (f3.from || f3.to) {
             const raw = this.rawValue(col, row);
-            const t5 = raw == null ? NaN : new Date(raw).getTime();
+            const t7 = raw == null ? NaN : new Date(raw).getTime();
             const from = f3.from ? new Date(f3.from).getTime() : -Infinity;
             const to = f3.to ? new Date(f3.to).getTime() + 864e5 - 1 : Infinity;
-            return !Number.isNaN(t5) && t5 >= from && t5 <= to;
+            return !Number.isNaN(t7) && t7 >= from && t7 <= to;
           }
           return true;
         })
@@ -2091,15 +2094,15 @@ var OkDataTable = class extends i3 {
       `;
     }
     if (type === "range" || type === "daterange") {
-      const t5 = type === "daterange" ? "date" : "number";
+      const t7 = type === "daterange" ? "date" : "number";
       const onEdge = type === "daterange" ? this.onDateRangeInput.bind(this) : this.onRangeInput.bind(this);
       return b2`
         <div class="fblock">
           <span class="flabel">${col.header}</span>
           <div class="frange">
-            <ion-input type=${t5} fill="outline" placeholder=${type === "daterange" ? this.t.from : this.t.gte}
+            <ion-input type=${t7} fill="outline" placeholder=${type === "daterange" ? this.t.from : this.t.gte}
               @ionInput=${(e5) => onEdge(col, "from", e5)}></ion-input>
-            <ion-input type=${t5} fill="outline" placeholder=${type === "daterange" ? this.t.to : this.t.lte}
+            <ion-input type=${t7} fill="outline" placeholder=${type === "daterange" ? this.t.to : this.t.lte}
               @ionInput=${(e5) => onEdge(col, "to", e5)}></ion-input>
           </div>
         </div>
@@ -2122,8 +2125,8 @@ var OkDataTable = class extends i3 {
   // `inlineFilters`. Look: «Todos los Estados» (placeholder) / «01/10/25 → 18/10/25».
   renderInlineFilters() {
     const cols = this.filterColumns.filter((c5) => {
-      const t5 = c5.filterType ?? "text";
-      return t5 === "select" || t5 === "multiselect" || t5 === "date" || t5 === "daterange";
+      const t7 = c5.filterType ?? "text";
+      return t7 === "select" || t7 === "multiselect" || t7 === "date" || t7 === "daterange";
     });
     if (!cols.length) return A;
     return b2`${cols.map((c5) => this.renderInlineFilter(c5))}`;
@@ -2287,6 +2290,19 @@ var OkDataTable = class extends i3 {
                   ${this.hasSearch ? b2`<div class="search">${searchbar}</div>` : A}
                   ${this.inlineFilters ? this.renderInlineFilters() : A}
                   <span class="tk-spacer"></span>
+                    ${this.effColumnPicker ? b2`
+                          <ion-select
+                            class="tk-cols"
+                            multiple
+                            interface="popover"
+                            aria-label=${this.t.columnsVisible}
+                            .value=${this.visibleColumns.map((c5) => c5.key)}
+                            .selectedText=${this.t.columns}
+                            @ionChange=${(e5) => this.setVisibleColumns(e5.detail.value)}
+                          >
+                            ${this.columns.map((c5) => b2`<ion-select-option value=${c5.key}>${c5.header}</ion-select-option>`)}
+                          </ion-select>
+                        ` : A}
                     ${this.effPageSizes.length ? b2`
                           <ion-select
                             class="tk-psize"
@@ -2303,19 +2319,6 @@ var OkDataTable = class extends i3 {
                             ${this.toolButton("list-outline", this.viewMode === "table", () => this.setViewMode("table"), this.t.viewList)}
                             ${this.toolButton("grid-outline", this.viewMode === "cards", () => this.setViewMode("cards"), this.t.viewCards)}
                           </span>
-                        ` : A}
-                    ${this.effColumnPicker ? b2`
-                          <ion-select
-                            class="tk-cols"
-                            multiple
-                            interface="popover"
-                            aria-label=${this.t.columnsVisible}
-                            .value=${this.visibleColumns.map((c5) => c5.key)}
-                            .selectedText=${this.t.columns}
-                            @ionChange=${(e5) => this.setVisibleColumns(e5.detail.value)}
-                          >
-                            ${this.columns.map((c5) => b2`<ion-select-option value=${c5.key}>${c5.header}</ion-select-option>`)}
-                          </ion-select>
                         ` : A}
                     ${this.hasFilterRow && !this.inlineFilters ? this.toolButton("funnel-outline", this.panel === "filters" || this.activeFilterCount > 0, () => this.toggle("filters"), this.t.filters, this.serverSide ? void 0 : this.activeFilterCount) : A}
                     ${this.effImport ? b2`
@@ -2678,7 +2681,7 @@ __decorateClass2([
 ], OkDataTable.prototype, "menuOpen");
 define("ok-data-table", OkDataTable);
 
-// ../../node_modules/.pnpm/@erplora+module-sdk@file+..+hub+packages+module-sdk/node_modules/@erplora/module-sdk/src/index.ts
+// ../hub/packages/module-sdk/src/index.ts
 function isEmpty(v3) {
   return v3 === null || v3 === void 0 || v3 === "";
 }
@@ -2796,20 +2799,189 @@ function createListController(client, queryName, onChange = () => {
   return new ListController(client, queryName, onChange, opts);
 }
 
-// ui/components/erp-tasks-list/erp-tasks-list.ts
-var STATUS_LABELS = {
-  todo: "To Do",
-  in_progress: "In Progress",
-  blocked: "Blocked",
-  done: "Done",
-  cancelled: "Cancelled"
+// ../modules-workspace/modules/tasks/locales/es.json
+var es_default = {
+  name: "Tareas",
+  navigation: {
+    all: {
+      label: "Tareas"
+    },
+    projects: {
+      label: "Proyectos"
+    }
+  },
+  ui: {
+    titleTasks: "Tareas",
+    titleProjects: "Proyectos",
+    tabAll: "Todas",
+    tabMine: "Mis tareas",
+    colNumber: "N\xBA",
+    colTitle: "T\xEDtulo",
+    colStatus: "Estado",
+    colPriority: "Prioridad",
+    colDueDate: "Vence",
+    colCode: "C\xF3digo",
+    colName: "Nombre",
+    colColor: "Color",
+    colActive: "Activo",
+    status: {
+      todo: "Por hacer",
+      in_progress: "En curso",
+      blocked: "Bloqueada",
+      done: "Hecha",
+      cancelled: "Cancelada"
+    },
+    priority: {
+      low: "Baja",
+      medium: "Media",
+      high: "Alta",
+      urgent: "Urgente"
+    },
+    yes: "S\xED",
+    no: "No",
+    actionDetail: "Detalle",
+    actionStart: "Iniciar",
+    actionComplete: "Completar",
+    actionOpen: "Abrir",
+    actionAssign: "Asignar",
+    actionAssignToMe: "Asign\xE1rmela",
+    actionUnassign: "Desasignar",
+    actionAddSubtask: "A\xF1adir subtarea",
+    actionComment: "Comentar",
+    back: "Volver",
+    close: "Cerrar",
+    add: "A\xF1adir",
+    saving: "Guardando\u2026",
+    loading: "Cargando\u2026",
+    dueLabel: "Vence:",
+    completedLabel: "Completada:",
+    assignedToLabel: "Asignada a:",
+    createdLabel: "Creada:",
+    subtasksHeading: "Subtareas ({count})",
+    commentsHeading: "Comentarios ({count})",
+    anonymous: "an\xF3nimo",
+    newTaskPlaceholder: "Nueva tarea\u2026",
+    priorityPlaceholder: "Prioridad\u2026",
+    newSubtaskPlaceholder: "Nueva subtarea\u2026",
+    addCommentPlaceholder: "A\xF1adir comentario\u2026",
+    userUuidPlaceholder: "uuid del usuario\u2026",
+    searchTasksPlaceholder: "Buscar n\xBA o t\xEDtulo\u2026",
+    searchProjectsPlaceholder: "Buscar c\xF3digo o nombre\u2026",
+    codePlaceholder: "C\xF3digo (q3-audit)",
+    namePlaceholder: "Nombre",
+    colorPlaceholder: "Color (opcional)",
+    emptyTasks: "Sin tareas.",
+    emptyMine: "Sin tareas abiertas asignadas a ti.",
+    emptySubtasks: "Sin subtareas.",
+    emptyComments: "Sin comentarios.",
+    emptyProjects: "Sin proyectos.",
+    noSessionMine: 'Sin sesi\xF3n de usuario en el shell: la vista "Mis tareas" no est\xE1 disponible.',
+    errLoadMine: "Error cargando mis tareas",
+    errLoadDetail: "Error cargando el detalle",
+    errRunAction: "No se pudo ejecutar la acci\xF3n",
+    errCreateTask: "No se pudo crear la tarea",
+    errCreateProject: "No se pudo crear el proyecto"
+  }
 };
-var PRIORITY_LABELS = {
-  low: "Low",
-  medium: "Medium",
-  high: "High",
-  urgent: "Urgent"
+
+// ../modules-workspace/modules/tasks/locales/en.json
+var en_default = {
+  name: "Tasks",
+  navigation: {
+    all: {
+      label: "Tasks"
+    },
+    projects: {
+      label: "Projects"
+    }
+  },
+  ui: {
+    titleTasks: "Tasks",
+    titleProjects: "Projects",
+    tabAll: "All",
+    tabMine: "My tasks",
+    colNumber: "No.",
+    colTitle: "Title",
+    colStatus: "Status",
+    colPriority: "Priority",
+    colDueDate: "Due",
+    colCode: "Code",
+    colName: "Name",
+    colColor: "Color",
+    colActive: "Active",
+    status: {
+      todo: "To Do",
+      in_progress: "In Progress",
+      blocked: "Blocked",
+      done: "Done",
+      cancelled: "Cancelled"
+    },
+    priority: {
+      low: "Low",
+      medium: "Medium",
+      high: "High",
+      urgent: "Urgent"
+    },
+    yes: "Yes",
+    no: "No",
+    actionDetail: "Detail",
+    actionStart: "Start",
+    actionComplete: "Complete",
+    actionOpen: "Open",
+    actionAssign: "Assign",
+    actionAssignToMe: "Assign to me",
+    actionUnassign: "Unassign",
+    actionAddSubtask: "Add subtask",
+    actionComment: "Comment",
+    back: "Back",
+    close: "Close",
+    add: "Add",
+    saving: "Saving\u2026",
+    loading: "Loading\u2026",
+    dueLabel: "Due:",
+    completedLabel: "Completed:",
+    assignedToLabel: "Assigned to:",
+    createdLabel: "Created:",
+    subtasksHeading: "Subtasks ({count})",
+    commentsHeading: "Comments ({count})",
+    anonymous: "anonymous",
+    newTaskPlaceholder: "New task\u2026",
+    priorityPlaceholder: "Priority\u2026",
+    newSubtaskPlaceholder: "New subtask\u2026",
+    addCommentPlaceholder: "Add comment\u2026",
+    userUuidPlaceholder: "user uuid\u2026",
+    searchTasksPlaceholder: "Search no. or title\u2026",
+    searchProjectsPlaceholder: "Search code or name\u2026",
+    codePlaceholder: "Code (q3-audit)",
+    namePlaceholder: "Name",
+    colorPlaceholder: "Color (optional)",
+    emptyTasks: "No tasks.",
+    emptyMine: "No open tasks assigned to you.",
+    emptySubtasks: "No subtasks.",
+    emptyComments: "No comments.",
+    emptyProjects: "No projects.",
+    noSessionMine: 'No user session in the shell: the "My tasks" view is unavailable.',
+    errLoadMine: "Error loading my tasks",
+    errLoadDetail: "Error loading the detail",
+    errRunAction: "Could not run the action",
+    errCreateTask: "Could not create the task",
+    errCreateProject: "Could not create the project"
+  }
 };
+
+// ../modules-workspace/modules/tasks/ui/components/erp-tasks-list/erp-tasks-list.ts
+var CATALOG = { es: es_default, en: en_default };
+var STATUS_VALUES = ["todo", "in_progress", "blocked", "done", "cancelled"];
+var PRIORITY_VALUES = ["low", "medium", "high", "urgent"];
+function t5(key, params) {
+  return erplora().t(CATALOG, key, params);
+}
+function statusLabel(status) {
+  return t5(`ui.status.${status}`);
+}
+function priorityLabel(priority) {
+  return t5(`ui.priority.${priority}`);
+}
 function erplora() {
   const c5 = globalThis.erplora;
   if (!c5) throw new Error("erplora SDK no inicializado por el shell");
@@ -2849,40 +3021,9 @@ var ErpTasksList = class extends i3 {
     this.newSubtaskTitle = "";
     this.trail = [];
     this.userRef = currentUserRef();
-    this.columns = [
-      { key: "task_number", header: "N\xBA", sortable: true, filterable: true, filterType: "text" },
-      { key: "title", header: "T\xEDtulo", sortable: true, filterable: true, filterType: "text" },
-      {
-        key: "status",
-        header: "Estado",
-        sortable: true,
-        filterable: true,
-        filterType: "select",
-        options: Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label })),
-        format: (r6) => STATUS_LABELS[r6.status] ?? r6.status
-      },
-      {
-        key: "priority",
-        header: "Prioridad",
-        sortable: true,
-        filterable: true,
-        filterType: "select",
-        options: Object.entries(PRIORITY_LABELS).map(([value, label]) => ({ value, label }))
-      },
-      {
-        key: "due_date",
-        header: "Vence",
-        sortable: true,
-        filterable: true,
-        filterType: "daterange",
-        format: (r6) => fmtDate(r6.due_date)
-      }
-    ];
-    this.rowActions = [
-      { id: "detail", label: "Detalle", icon: "open-outline", color: "primary" },
-      { id: "start", label: "Iniciar", icon: "play-circle-outline", color: "primary" },
-      { id: "complete", label: "Completar", icon: "checkmark-done-outline", color: "success" }
-    ];
+    // Re-render al cambiar el idioma del shell (ADR-0055): los getters `columns`/`rowActions` y el
+    // texto del template se re-evalúan con el nuevo `erplora.locale`.
+    this.onLocaleChange = () => this.requestUpdate();
   }
   static {
     this.styles = i`
@@ -2924,8 +3065,49 @@ var ErpTasksList = class extends i3 {
     .empty { color:var(--ink-2,#6f6a5e); font-size:.9rem; padding:.35rem 0; }
   `;
   }
+  // Getters (no campos): se re-evalúan en cada render, así los textos cambian con el idioma activo
+  // (ADR-0055). `connectedCallback` re-renderiza al recibir `erplora:locale-changed`.
+  get columns() {
+    return [
+      { key: "task_number", header: t5("ui.colNumber"), sortable: true, filterable: true, filterType: "text" },
+      { key: "title", header: t5("ui.colTitle"), sortable: true, filterable: true, filterType: "text" },
+      {
+        key: "status",
+        header: t5("ui.colStatus"),
+        sortable: true,
+        filterable: true,
+        filterType: "select",
+        options: STATUS_VALUES.map((value) => ({ value, label: statusLabel(value) })),
+        format: (r6) => statusLabel(r6.status)
+      },
+      {
+        key: "priority",
+        header: t5("ui.colPriority"),
+        sortable: true,
+        filterable: true,
+        filterType: "select",
+        options: PRIORITY_VALUES.map((value) => ({ value, label: priorityLabel(value) }))
+      },
+      {
+        key: "due_date",
+        header: t5("ui.colDueDate"),
+        sortable: true,
+        filterable: true,
+        filterType: "daterange",
+        format: (r6) => fmtDate(r6.due_date)
+      }
+    ];
+  }
+  get rowActions() {
+    return [
+      { id: "detail", label: t5("ui.actionDetail"), icon: "open-outline", color: "primary" },
+      { id: "start", label: t5("ui.actionStart"), icon: "play-circle-outline", color: "primary" },
+      { id: "complete", label: t5("ui.actionComplete"), icon: "checkmark-done-outline", color: "success" }
+    ];
+  }
   async connectedCallback() {
     super.connectedCallback();
+    window.addEventListener("erplora:locale-changed", this.onLocaleChange);
     this.ctrl = createListController(erplora(), "tasks.tasks.list", () => this.requestUpdate(), {
       pageSize: 50,
       sort: "created_at",
@@ -2946,6 +3128,7 @@ var ErpTasksList = class extends i3 {
     }
   }
   disconnectedCallback() {
+    window.removeEventListener("erplora:locale-changed", this.onLocaleChange);
     super.disconnectedCallback();
     this.unsub?.();
   }
@@ -2967,7 +3150,7 @@ var ErpTasksList = class extends i3 {
       });
       this.myTasks = rows ?? [];
     } catch (e5) {
-      this.myError = e5 instanceof Error ? e5.message : "Error cargando mis tareas";
+      this.myError = e5 instanceof Error ? e5.message : t5("ui.errLoadMine");
     } finally {
       this.myLoading = false;
     }
@@ -2995,7 +3178,7 @@ var ErpTasksList = class extends i3 {
       this.subtasks = subs ?? [];
       this.comments = comments ?? [];
     } catch (e5) {
-      this.detailError = e5 instanceof Error ? e5.message : "Error cargando el detalle";
+      this.detailError = e5 instanceof Error ? e5.message : t5("ui.errLoadDetail");
     }
   }
   openDetail(task) {
@@ -3030,7 +3213,7 @@ var ErpTasksList = class extends i3 {
       if (this.view === "mine") await this.loadMyTasks();
       if (refreshDetail && this.detail) await this.loadDetail(this.detail.id, { keepTrail: true });
     } catch (e5) {
-      this.detailError = e5 instanceof Error ? e5.message : "No se pudo ejecutar la acci\xF3n";
+      this.detailError = e5 instanceof Error ? e5.message : t5("ui.errRunAction");
     } finally {
       this.detailBusy = false;
     }
@@ -3056,7 +3239,7 @@ var ErpTasksList = class extends i3 {
       this.newPriority = "medium";
       await this.ctrl.load();
     } catch (e5) {
-      this.formError = e5 instanceof Error ? e5.message : "No se pudo crear la tarea";
+      this.formError = e5 instanceof Error ? e5.message : t5("ui.errCreateTask");
     } finally {
       this.saving = false;
     }
@@ -3119,110 +3302,110 @@ var ErpTasksList = class extends i3 {
   }
   // ── Render ────────────────────────────────────────────────────────────────
   renderBadge(status) {
-    return b2`<span class="badge ${status}">${STATUS_LABELS[status] ?? status}</span>`;
+    return b2`<span class="badge ${status}">${statusLabel(status)}</span>`;
   }
   renderDetail() {
-    const t5 = this.detail;
-    if (!t5) return A;
-    const closed = t5.status === "done" || t5.status === "cancelled";
+    const task = this.detail;
+    if (!task) return A;
+    const closed = task.status === "done" || task.status === "cancelled";
     return b2`<section class="detail">
       ${this.trail.length ? b2`<div class="crumb">
-            <ion-button size="small" fill="clear" @click=${() => this.goBack()}>← Volver</ion-button>
-            <span class="muted">${this.trail.map((p4) => p4.task_number).join(" \u203A ")} › ${t5.task_number}</span>
+            <ion-button size="small" fill="clear" @click=${() => this.goBack()}>← ${t5("ui.back")}</ion-button>
+            <span class="muted">${this.trail.map((p4) => p4.task_number).join(" \u203A ")} › ${task.task_number}</span>
           </div>` : A}
       <div class="detail-head">
-        <h3>${t5.task_number} — ${t5.title}</h3>
-        ${this.renderBadge(t5.status)}
-        <span class="badge">${PRIORITY_LABELS[t5.priority] ?? t5.priority}</span>
-        <ion-button size="small" fill="clear" @click=${() => this.closeDetail()}>Cerrar</ion-button>
+        <h3>${task.task_number} — ${task.title}</h3>
+        ${this.renderBadge(task.status)}
+        <span class="badge">${priorityLabel(task.priority)}</span>
+        <ion-button size="small" fill="clear" @click=${() => this.closeDetail()}>${t5("ui.close")}</ion-button>
       </div>
-      ${t5.description ? b2`<p class="desc">${t5.description}</p>` : A}
+      ${task.description ? b2`<p class="desc">${task.description}</p>` : A}
       <div class="meta">
-        <span><strong>Vence:</strong> ${fmtDate(t5.due_date)}</span>
-        <span><strong>Completada:</strong> ${fmtDate(t5.completed_at)}</span>
-        <span><strong>Asignada a:</strong> ${t5.assigned_to_ref ?? "\u2014"}</span>
-        <span><strong>Creada:</strong> ${fmtDate(t5.created_at)}</span>
+        <span><strong>${t5("ui.dueLabel")}</strong> ${fmtDate(task.due_date)}</span>
+        <span><strong>${t5("ui.completedLabel")}</strong> ${fmtDate(task.completed_at)}</span>
+        <span><strong>${t5("ui.assignedToLabel")}</strong> ${task.assigned_to_ref ?? "\u2014"}</span>
+        <span><strong>${t5("ui.createdLabel")}</strong> ${fmtDate(task.created_at)}</span>
       </div>
 
       <div class="actions-row">
-        <ion-select label="Estado" label-placement="stacked" .value=${t5.status}
+        <ion-select label=${t5("ui.colStatus")} label-placement="stacked" .value=${task.status}
           ?disabled=${this.detailBusy}
           @ionChange=${(e5) => this.changeStatus(e5.target.value)}>
-          ${Object.entries(STATUS_LABELS).map(
-      ([k2, v3]) => b2`<ion-select-option .value=${k2}>${v3}</ion-select-option>`
+          ${STATUS_VALUES.map(
+      (k2) => b2`<ion-select-option .value=${k2}>${statusLabel(k2)}</ion-select-option>`
     )}
         </ion-select>
         <ion-button size="small" color="success" ?disabled=${this.detailBusy || closed}
-          @click=${() => this.completeTask()}>Completar</ion-button>
-        <ion-input placeholder="uuid del usuario…" .value=${this.assignRef}
+          @click=${() => this.completeTask()}>${t5("ui.actionComplete")}</ion-button>
+        <ion-input placeholder=${t5("ui.userUuidPlaceholder")} .value=${this.assignRef}
           @ionInput=${(e5) => this.assignRef = e5.target.value}></ion-input>
         <ion-button size="small" ?disabled=${this.detailBusy}
-          @click=${() => this.assignTask(this.assignRef)}>Asignar</ion-button>
-        ${this.userRef && this.userRef !== t5.assigned_to_ref ? b2`<ion-button size="small" fill="outline" ?disabled=${this.detailBusy}
-              @click=${() => this.assignTask(this.userRef)}>Asignármela</ion-button>` : A}
-        ${t5.assigned_to_ref ? b2`<ion-button size="small" fill="outline" color="medium" ?disabled=${this.detailBusy}
-              @click=${() => this.assignTask(null)}>Desasignar</ion-button>` : A}
+          @click=${() => this.assignTask(this.assignRef)}>${t5("ui.actionAssign")}</ion-button>
+        ${this.userRef && this.userRef !== task.assigned_to_ref ? b2`<ion-button size="small" fill="outline" ?disabled=${this.detailBusy}
+              @click=${() => this.assignTask(this.userRef)}>${t5("ui.actionAssignToMe")}</ion-button>` : A}
+        ${task.assigned_to_ref ? b2`<ion-button size="small" fill="outline" color="medium" ?disabled=${this.detailBusy}
+              @click=${() => this.assignTask(null)}>${t5("ui.actionUnassign")}</ion-button>` : A}
       </div>
       ${this.detailError ? b2`<p class="err">${this.detailError}</p>` : A}
 
-      <h4>Subtareas (${this.subtasks.length})</h4>
+      <h4>${t5("ui.subtasksHeading", { count: this.subtasks.length })}</h4>
       ${this.subtasks.length ? this.subtasks.map(
       (s5) => b2`<div class="subtask">
               <span class="t">${s5.task_number} — ${s5.title}</span>
               ${this.renderBadge(s5.status)}
-              <ion-button size="small" fill="clear" @click=${() => this.drillDown(s5)}>Abrir</ion-button>
+              <ion-button size="small" fill="clear" @click=${() => this.drillDown(s5)}>${t5("ui.actionOpen")}</ion-button>
             </div>`
-    ) : b2`<p class="empty">Sin subtareas.</p>`}
+    ) : b2`<p class="empty">${t5("ui.emptySubtasks")}</p>`}
       <form class="comment-form" @submit=${(e5) => this.addSubtask(e5)}>
-        <ion-input placeholder="Nueva subtarea…" .value=${this.newSubtaskTitle}
+        <ion-input placeholder=${t5("ui.newSubtaskPlaceholder")} .value=${this.newSubtaskTitle}
           @ionInput=${(e5) => this.newSubtaskTitle = e5.target.value}></ion-input>
         <ion-button type="submit" size="small" ?disabled=${this.detailBusy || !this.newSubtaskTitle}>
-          Añadir subtarea</ion-button>
+          ${t5("ui.actionAddSubtask")}</ion-button>
       </form>
 
-      <h4>Comentarios (${this.comments.length})</h4>
+      <h4>${t5("ui.commentsHeading", { count: this.comments.length })}</h4>
       ${this.comments.length ? this.comments.map(
       (c5) => b2`<div class="comment">
-              <div class="who">${c5.author_ref ?? "an\xF3nimo"} · ${String(c5.created_at).slice(0, 16).replace("T", " ")}</div>
+              <div class="who">${c5.author_ref ?? t5("ui.anonymous")} · ${String(c5.created_at).slice(0, 16).replace("T", " ")}</div>
               <p>${c5.comment}</p>
             </div>`
-    ) : b2`<p class="empty">Sin comentarios.</p>`}
+    ) : b2`<p class="empty">${t5("ui.emptyComments")}</p>`}
       <form class="comment-form" @submit=${(e5) => this.addComment(e5)}>
-        <ion-textarea auto-grow rows="1" placeholder="Añadir comentario…" .value=${this.newComment}
+        <ion-textarea auto-grow rows="1" placeholder=${t5("ui.addCommentPlaceholder")} .value=${this.newComment}
           @ionInput=${(e5) => this.newComment = e5.target.value}></ion-textarea>
         <ion-button type="submit" size="small" ?disabled=${this.detailBusy || !this.newComment.trim()}>
-          Comentar</ion-button>
+          ${t5("ui.actionComment")}</ion-button>
       </form>
     </section>`;
   }
   renderAll() {
     return b2`<form class="form" @submit=${(e5) => this.createTask(e5)}>
-        <ion-input placeholder="Nueva tarea…" .value=${this.newTitle} @ionInput=${(e5) => this.newTitle = e5.target.value}></ion-input>
-        <ion-select placeholder="Prioridad…" .value=${this.newPriority} @ionChange=${(e5) => this.newPriority = e5.target.value}>
-          ${Object.entries(PRIORITY_LABELS).map(
-      ([k2, v3]) => b2`<ion-select-option .value=${k2}>${v3}</ion-select-option>`
+        <ion-input placeholder=${t5("ui.newTaskPlaceholder")} .value=${this.newTitle} @ionInput=${(e5) => this.newTitle = e5.target.value}></ion-input>
+        <ion-select placeholder=${t5("ui.priorityPlaceholder")} .value=${this.newPriority} @ionChange=${(e5) => this.newPriority = e5.target.value}>
+          ${PRIORITY_VALUES.map(
+      (k2) => b2`<ion-select-option .value=${k2}>${priorityLabel(k2)}</ion-select-option>`
     )}
         </ion-select>
-        <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newTitle}>${this.saving ? "Guardando\u2026" : "A\xF1adir"}</ion-button>
+        <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newTitle}>${this.saving ? t5("ui.saving") : t5("ui.add")}</ion-button>
       </form>
       ${this.formError ? b2`<p class="err">${this.formError}</p>` : A}
       ${this.ctrl?.error ? b2`<p class="err">${this.ctrl.error}</p>` : A}
-      <ok-data-table .serverSide=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${"Buscar n\xBA o t\xEDtulo\u2026"} .actions=${this.rowActions} .emptyMessage=${this.ctrl?.loading ? "Cargando\u2026" : "Sin tareas."} @rowAction=${(e5) => this.onRowAction(e5)} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}></ok-data-table>`;
+      <ok-data-table .serverSide=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${t5("ui.searchTasksPlaceholder")} .actions=${this.rowActions} .emptyMessage=${this.ctrl?.loading ? t5("ui.loading") : t5("ui.emptyTasks")} @rowAction=${(e5) => this.onRowAction(e5)} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}></ok-data-table>`;
   }
   renderMine() {
     if (!this.userRef) {
-      return b2`<p class="empty">Sin sesión de usuario en el shell: la vista "Mis tareas" no está disponible.</p>`;
+      return b2`<p class="empty">${t5("ui.noSessionMine")}</p>`;
     }
     return b2`${this.myError ? b2`<p class="err">${this.myError}</p>` : A}
-      <ok-data-table .columns=${this.columns} .rows=${this.myTasks} .searchKeys=${["task_number", "title"]} .searchPlaceholder=${"Buscar n\xBA o t\xEDtulo\u2026"} .actions=${this.rowActions} .emptyMessage=${this.myLoading ? "Cargando\u2026" : "Sin tareas abiertas asignadas a ti."} @rowAction=${(e5) => this.onRowAction(e5)}></ok-data-table>`;
+      <ok-data-table .columns=${this.columns} .rows=${this.myTasks} .searchKeys=${["task_number", "title"]} .searchPlaceholder=${t5("ui.searchTasksPlaceholder")} .actions=${this.rowActions} .emptyMessage=${this.myLoading ? t5("ui.loading") : t5("ui.emptyMine")} @rowAction=${(e5) => this.onRowAction(e5)}></ok-data-table>`;
   }
   render() {
     return b2`<div>
         <header>
-          <h2>Tareas</h2>
+          <h2>${t5("ui.titleTasks")}</h2>
           <ion-segment .value=${this.view} @ionChange=${(e5) => this.setView(e5.detail.value)}>
-            <ion-segment-button value="all"><ion-label>Todas</ion-label></ion-segment-button>
-            ${this.userRef ? b2`<ion-segment-button value="mine"><ion-label>Mis tareas</ion-label></ion-segment-button>` : A}
+            <ion-segment-button value="all"><ion-label>${t5("ui.tabAll")}</ion-label></ion-segment-button>
+            ${this.userRef ? b2`<ion-segment-button value="mine"><ion-label>${t5("ui.tabMine")}</ion-label></ion-segment-button>` : A}
           </ion-segment>
         </header>
         ${this.renderDetail()}
@@ -3283,11 +3466,15 @@ __decorateClass([
 ], ErpTasksList.prototype, "trail", 2);
 define("erp-tasks-list", ErpTasksList);
 
-// ui/components/erp-tasks-projects/erp-tasks-projects.ts
+// ../modules-workspace/modules/tasks/ui/components/erp-tasks-projects/erp-tasks-projects.ts
+var CATALOG2 = { es: es_default, en: en_default };
 function erplora2() {
   const c5 = globalThis.erplora;
   if (!c5) throw new Error("erplora SDK no inicializado por el shell");
   return c5;
+}
+function t6(key, params) {
+  return erplora2().t(CATALOG2, key, params);
 }
 var ErpTasksProjects = class extends i3 {
   constructor() {
@@ -3298,23 +3485,9 @@ var ErpTasksProjects = class extends i3 {
     this.saving = false;
     this.formError = "";
     this.tick = 0;
-    this.columns = [
-      { key: "code", header: "C\xF3digo", sortable: true, filterable: true, filterType: "text" },
-      { key: "name", header: "Nombre", sortable: true, filterable: true, filterType: "text" },
-      { key: "color", header: "Color", sortable: true, filterable: true, filterType: "text", format: (r6) => r6.color || "\u2014" },
-      {
-        key: "is_active",
-        header: "Activo",
-        sortable: true,
-        filterable: true,
-        filterType: "select",
-        options: [
-          { value: "1", label: "S\xED" },
-          { value: "0", label: "No" }
-        ],
-        format: (r6) => r6.is_active ? "S\xED" : "No"
-      }
-    ];
+    // Re-render al cambiar el idioma del shell (ADR-0055): el getter `columns` y el texto del
+    // template se re-evalúan con el nuevo `erplora.locale`.
+    this.onLocaleChange = () => this.requestUpdate();
   }
   static {
     this.styles = i`
@@ -3326,11 +3499,33 @@ var ErpTasksProjects = class extends i3 {
     .err { color:#d9480f; font-weight:600; }
   `;
   }
+  // Getter (no campo): se re-evalúa en cada render, así los textos cambian con el idioma activo
+  // (ADR-0055). `connectedCallback` re-renderiza al recibir `erplora:locale-changed`.
+  get columns() {
+    return [
+      { key: "code", header: t6("ui.colCode"), sortable: true, filterable: true, filterType: "text" },
+      { key: "name", header: t6("ui.colName"), sortable: true, filterable: true, filterType: "text" },
+      { key: "color", header: t6("ui.colColor"), sortable: true, filterable: true, filterType: "text", format: (r6) => r6.color || "\u2014" },
+      {
+        key: "is_active",
+        header: t6("ui.colActive"),
+        sortable: true,
+        filterable: true,
+        filterType: "select",
+        options: [
+          { value: "1", label: t6("ui.yes") },
+          { value: "0", label: t6("ui.no") }
+        ],
+        format: (r6) => r6.is_active ? t6("ui.yes") : t6("ui.no")
+      }
+    ];
+  }
   // TODO-LIT: componentWillLoad → connectedCallback. Recuerda: connectedCallback se dispara
   // en CADA reconexión al DOM (no solo en el primer montaje). Si la init debe correr una
   // sola vez tras el primer render, considera firstUpdated() en su lugar.
   async connectedCallback() {
     super.connectedCallback();
+    window.addEventListener("erplora:locale-changed", this.onLocaleChange);
     this.ctrl = createListController(erplora2(), "tasks.projects.list", () => this.requestUpdate(), {
       pageSize: 50,
       sort: "created_at",
@@ -3344,6 +3539,7 @@ var ErpTasksProjects = class extends i3 {
     }
   }
   disconnectedCallback() {
+    window.removeEventListener("erplora:locale-changed", this.onLocaleChange);
     super.disconnectedCallback();
     this.unsub?.();
   }
@@ -3364,7 +3560,7 @@ var ErpTasksProjects = class extends i3 {
       this.newColor = "";
       await this.ctrl.load();
     } catch (e5) {
-      this.formError = e5 instanceof Error ? e5.message : "No se pudo crear el proyecto";
+      this.formError = e5 instanceof Error ? e5.message : t6("ui.errCreateProject");
     } finally {
       this.saving = false;
     }
@@ -3372,17 +3568,17 @@ var ErpTasksProjects = class extends i3 {
   render() {
     return b2`<div>
         <header>
-          <h2>Proyectos</h2>
+          <h2>${t6("ui.titleProjects")}</h2>
         </header>
         <form class="form" @submit=${(e5) => this.createProject(e5)}>
-          <ion-input placeholder="Código (q3-audit)" .value=${this.newCode} @ionInput=${(e5) => this.newCode = e5.target.value}></ion-input>
-          <ion-input placeholder="Nombre" .value=${this.newName} @ionInput=${(e5) => this.newName = e5.target.value}></ion-input>
-          <ion-input placeholder="Color (opcional)" .value=${this.newColor} @ionInput=${(e5) => this.newColor = e5.target.value}></ion-input>
-          <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newCode || !this.newName}>${this.saving ? "Guardando\u2026" : "A\xF1adir"}</ion-button>
+          <ion-input placeholder=${t6("ui.codePlaceholder")} .value=${this.newCode} @ionInput=${(e5) => this.newCode = e5.target.value}></ion-input>
+          <ion-input placeholder=${t6("ui.namePlaceholder")} .value=${this.newName} @ionInput=${(e5) => this.newName = e5.target.value}></ion-input>
+          <ion-input placeholder=${t6("ui.colorPlaceholder")} .value=${this.newColor} @ionInput=${(e5) => this.newColor = e5.target.value}></ion-input>
+          <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newCode || !this.newName}>${this.saving ? t6("ui.saving") : t6("ui.add")}</ion-button>
         </form>
         ${this.formError ? b2`<p class="err">${this.formError}</p>` : A}
         ${this.ctrl?.error ? b2`<p class="err">${this.ctrl.error}</p>` : A}
-        <ok-data-table .serverSide=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${"Buscar c\xF3digo o nombre\u2026"} .emptyMessage=${this.ctrl?.loading ? "Cargando\u2026" : "Sin proyectos."} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}></ok-data-table>
+        <ok-data-table .serverSide=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${t6("ui.searchProjectsPlaceholder")} .emptyMessage=${this.ctrl?.loading ? t6("ui.loading") : t6("ui.emptyProjects")} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}></ok-data-table>
       </div>`;
   }
 };

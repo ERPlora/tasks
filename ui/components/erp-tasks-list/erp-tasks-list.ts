@@ -5,12 +5,20 @@ import '@erplora/outfitkit/ok-data-table';
 import type { DataTableColumn } from '@erplora/outfitkit';
 import { createListController } from '@erplora/module-sdk';
 import type { ListController, ListClient, ListParams, ListPage } from '@erplora/module-sdk';
+// Catálogo i18n del módulo (ADR-0055): esbuild inlinea estos JSON en el `dist` del WC. Los textos
+// internos se resuelven con `erplora.t(CATALOG, 'ui.clave')` (idioma activo, fallback locale→en→clave).
+import esLocale from '../../../locales/es.json';
+import enLocale from '../../../locales/en.json';
+const CATALOG: Record<string, unknown> = { es: esLocale, en: enLocale };
 
 interface ErploraClientLike extends ListClient {
   query<T = unknown>(name: string, params?: Record<string, unknown>): Promise<T>;
   queryPage<R = unknown>(name: string, params: ListParams): Promise<ListPage<R>>;
   command<T = unknown>(name: string, payload?: Record<string, unknown>): Promise<T>;
   on(event: string, cb: (payload: unknown) => void): () => void;
+  /** i18n del módulo (ADR-0055): idioma activo + traducción del catálogo `ui`. */
+  locale: string;
+  t(catalog: Record<string, unknown>, key: string, params?: Record<string, unknown>): string;
 }
 
 interface Task {
@@ -38,20 +46,22 @@ interface TaskComment {
   created_at: string;
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  todo: 'To Do',
-  in_progress: 'In Progress',
-  blocked: 'Blocked',
-  done: 'Done',
-  cancelled: 'Cancelled',
-};
+// Valores de enum (claves): NO se traducen. Las etiquetas visibles se resuelven por i18n.
+const STATUS_VALUES = ['todo', 'in_progress', 'blocked', 'done', 'cancelled'] as const;
+const PRIORITY_VALUES = ['low', 'medium', 'high', 'urgent'] as const;
 
-const PRIORITY_LABELS: Record<string, string> = {
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High',
-  urgent: 'Urgent',
-};
+/** Traducción del catálogo `ui` (idioma activo, fallback locale→en→clave). */
+function t(key: string, params?: Record<string, unknown>): string {
+  return erplora().t(CATALOG, key, params);
+}
+
+function statusLabel(status: string): string {
+  return t(`ui.status.${status}`);
+}
+
+function priorityLabel(priority: string): string {
+  return t(`ui.priority.${priority}`);
+}
 
 function erplora(): ErploraClientLike {
   const c = (globalThis as { erplora?: ErploraClientLike }).erplora;
@@ -159,44 +169,55 @@ export class ErpTasksList extends LitElement {
 
   private userRef = currentUserRef();
 
-  private columns: DataTableColumn[] = [
-    { key: 'task_number', header: 'Nº', sortable: true, filterable: true, filterType: 'text' },
-    { key: 'title', header: 'Título', sortable: true, filterable: true, filterType: 'text' },
-    {
-      key: 'status',
-      header: 'Estado',
-      sortable: true,
-      filterable: true,
-      filterType: 'select',
-      options: Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label })),
-      format: (r) => STATUS_LABELS[r.status as string] ?? (r.status as string),
-    },
-    {
-      key: 'priority',
-      header: 'Prioridad',
-      sortable: true,
-      filterable: true,
-      filterType: 'select',
-      options: Object.entries(PRIORITY_LABELS).map(([value, label]) => ({ value, label })),
-    },
-    {
-      key: 'due_date',
-      header: 'Vence',
-      sortable: true,
-      filterable: true,
-      filterType: 'daterange',
-      format: (r) => fmtDate(r.due_date as string | null),
-    },
-  ];
+  // Getters (no campos): se re-evalúan en cada render, así los textos cambian con el idioma activo
+  // (ADR-0055). `connectedCallback` re-renderiza al recibir `erplora:locale-changed`.
+  private get columns(): DataTableColumn[] {
+    return [
+      { key: 'task_number', header: t('ui.colNumber'), sortable: true, filterable: true, filterType: 'text' },
+      { key: 'title', header: t('ui.colTitle'), sortable: true, filterable: true, filterType: 'text' },
+      {
+        key: 'status',
+        header: t('ui.colStatus'),
+        sortable: true,
+        filterable: true,
+        filterType: 'select',
+        options: STATUS_VALUES.map((value) => ({ value, label: statusLabel(value) })),
+        format: (r) => statusLabel(r.status as string),
+      },
+      {
+        key: 'priority',
+        header: t('ui.colPriority'),
+        sortable: true,
+        filterable: true,
+        filterType: 'select',
+        options: PRIORITY_VALUES.map((value) => ({ value, label: priorityLabel(value) })),
+      },
+      {
+        key: 'due_date',
+        header: t('ui.colDueDate'),
+        sortable: true,
+        filterable: true,
+        filterType: 'daterange',
+        format: (r) => fmtDate(r.due_date as string | null),
+      },
+    ];
+  }
 
-  private rowActions = [
-    { id: 'detail', label: 'Detalle', icon: 'open-outline', color: 'primary' },
-    { id: 'start', label: 'Iniciar', icon: 'play-circle-outline', color: 'primary' },
-    { id: 'complete', label: 'Completar', icon: 'checkmark-done-outline', color: 'success' },
-  ];
+  private get rowActions() {
+    return [
+      { id: 'detail', label: t('ui.actionDetail'), icon: 'open-outline', color: 'primary' },
+      { id: 'start', label: t('ui.actionStart'), icon: 'play-circle-outline', color: 'primary' },
+      { id: 'complete', label: t('ui.actionComplete'), icon: 'checkmark-done-outline', color: 'success' },
+    ];
+  }
+
+  // Re-render al cambiar el idioma del shell (ADR-0055): los getters `columns`/`rowActions` y el
+  // texto del template se re-evalúan con el nuevo `erplora.locale`.
+  private readonly onLocaleChange = (): void => this.requestUpdate();
 
   async connectedCallback() {
     super.connectedCallback();
+    window.addEventListener('erplora:locale-changed', this.onLocaleChange);
     this.ctrl = createListController<Task>(erplora(), 'tasks.tasks.list', () => this.requestUpdate(), {
       pageSize: 50,
       sort: 'created_at',
@@ -219,6 +240,7 @@ export class ErpTasksList extends LitElement {
   }
 
   disconnectedCallback() {
+    window.removeEventListener('erplora:locale-changed', this.onLocaleChange);
     super.disconnectedCallback();
     this.unsub?.();
   }
@@ -242,7 +264,7 @@ export class ErpTasksList extends LitElement {
       });
       this.myTasks = rows ?? [];
     } catch (e) {
-      this.myError = e instanceof Error ? e.message : 'Error cargando mis tareas';
+      this.myError = e instanceof Error ? e.message : t('ui.errLoadMine');
     } finally {
       this.myLoading = false;
     }
@@ -274,7 +296,7 @@ export class ErpTasksList extends LitElement {
       this.subtasks = subs ?? [];
       this.comments = comments ?? [];
     } catch (e) {
-      this.detailError = e instanceof Error ? e.message : 'Error cargando el detalle';
+      this.detailError = e instanceof Error ? e.message : t('ui.errLoadDetail');
     }
   }
 
@@ -315,7 +337,7 @@ export class ErpTasksList extends LitElement {
       if (this.view === 'mine') await this.loadMyTasks();
       if (refreshDetail && this.detail) await this.loadDetail(this.detail.id, { keepTrail: true });
     } catch (e) {
-      this.detailError = e instanceof Error ? e.message : 'No se pudo ejecutar la acción';
+      this.detailError = e instanceof Error ? e.message : t('ui.errRunAction');
     } finally {
       this.detailBusy = false;
     }
@@ -342,7 +364,7 @@ export class ErpTasksList extends LitElement {
       this.newPriority = 'medium';
       await this.ctrl.load();
     } catch (e) {
-      this.formError = e instanceof Error ? e.message : 'No se pudo crear la tarea';
+      this.formError = e instanceof Error ? e.message : t('ui.errCreateTask');
     } finally {
       this.saving = false;
     }
@@ -413,125 +435,125 @@ export class ErpTasksList extends LitElement {
   // ── Render ────────────────────────────────────────────────────────────────
 
   private renderBadge(status: string) {
-    return html`<span class="badge ${status}">${STATUS_LABELS[status] ?? status}</span>`;
+    return html`<span class="badge ${status}">${statusLabel(status)}</span>`;
   }
 
   private renderDetail() {
-    const t = this.detail;
-    if (!t) return nothing;
-    const closed = t.status === 'done' || t.status === 'cancelled';
+    const task = this.detail;
+    if (!task) return nothing;
+    const closed = task.status === 'done' || task.status === 'cancelled';
     return html`<section class="detail">
       ${this.trail.length
         ? html`<div class="crumb">
-            <ion-button size="small" fill="clear" @click=${() => this.goBack()}>← Volver</ion-button>
-            <span class="muted">${this.trail.map((p) => p.task_number).join(' › ')} › ${t.task_number}</span>
+            <ion-button size="small" fill="clear" @click=${() => this.goBack()}>← ${t('ui.back')}</ion-button>
+            <span class="muted">${this.trail.map((p) => p.task_number).join(' › ')} › ${task.task_number}</span>
           </div>`
         : nothing}
       <div class="detail-head">
-        <h3>${t.task_number} — ${t.title}</h3>
-        ${this.renderBadge(t.status)}
-        <span class="badge">${PRIORITY_LABELS[t.priority] ?? t.priority}</span>
-        <ion-button size="small" fill="clear" @click=${() => this.closeDetail()}>Cerrar</ion-button>
+        <h3>${task.task_number} — ${task.title}</h3>
+        ${this.renderBadge(task.status)}
+        <span class="badge">${priorityLabel(task.priority)}</span>
+        <ion-button size="small" fill="clear" @click=${() => this.closeDetail()}>${t('ui.close')}</ion-button>
       </div>
-      ${t.description ? html`<p class="desc">${t.description}</p>` : nothing}
+      ${task.description ? html`<p class="desc">${task.description}</p>` : nothing}
       <div class="meta">
-        <span><strong>Vence:</strong> ${fmtDate(t.due_date)}</span>
-        <span><strong>Completada:</strong> ${fmtDate(t.completed_at)}</span>
-        <span><strong>Asignada a:</strong> ${t.assigned_to_ref ?? '—'}</span>
-        <span><strong>Creada:</strong> ${fmtDate(t.created_at)}</span>
+        <span><strong>${t('ui.dueLabel')}</strong> ${fmtDate(task.due_date)}</span>
+        <span><strong>${t('ui.completedLabel')}</strong> ${fmtDate(task.completed_at)}</span>
+        <span><strong>${t('ui.assignedToLabel')}</strong> ${task.assigned_to_ref ?? '—'}</span>
+        <span><strong>${t('ui.createdLabel')}</strong> ${fmtDate(task.created_at)}</span>
       </div>
 
       <div class="actions-row">
-        <ion-select label="Estado" label-placement="stacked" .value=${t.status}
+        <ion-select label=${t('ui.colStatus')} label-placement="stacked" .value=${task.status}
           ?disabled=${this.detailBusy}
           @ionChange=${(e: any) => this.changeStatus(e.target.value)}>
-          ${Object.entries(STATUS_LABELS).map(
-            ([k, v]) => html`<ion-select-option .value=${k}>${v}</ion-select-option>`,
+          ${STATUS_VALUES.map(
+            (k) => html`<ion-select-option .value=${k}>${statusLabel(k)}</ion-select-option>`,
           )}
         </ion-select>
         <ion-button size="small" color="success" ?disabled=${this.detailBusy || closed}
-          @click=${() => this.completeTask()}>Completar</ion-button>
-        <ion-input placeholder="uuid del usuario…" .value=${this.assignRef}
+          @click=${() => this.completeTask()}>${t('ui.actionComplete')}</ion-button>
+        <ion-input placeholder=${t('ui.userUuidPlaceholder')} .value=${this.assignRef}
           @ionInput=${(e: any) => (this.assignRef = e.target.value)}></ion-input>
         <ion-button size="small" ?disabled=${this.detailBusy}
-          @click=${() => this.assignTask(this.assignRef)}>Asignar</ion-button>
-        ${this.userRef && this.userRef !== t.assigned_to_ref
+          @click=${() => this.assignTask(this.assignRef)}>${t('ui.actionAssign')}</ion-button>
+        ${this.userRef && this.userRef !== task.assigned_to_ref
           ? html`<ion-button size="small" fill="outline" ?disabled=${this.detailBusy}
-              @click=${() => this.assignTask(this.userRef)}>Asignármela</ion-button>`
+              @click=${() => this.assignTask(this.userRef)}>${t('ui.actionAssignToMe')}</ion-button>`
           : nothing}
-        ${t.assigned_to_ref
+        ${task.assigned_to_ref
           ? html`<ion-button size="small" fill="outline" color="medium" ?disabled=${this.detailBusy}
-              @click=${() => this.assignTask(null)}>Desasignar</ion-button>`
+              @click=${() => this.assignTask(null)}>${t('ui.actionUnassign')}</ion-button>`
           : nothing}
       </div>
       ${this.detailError ? html`<p class="err">${this.detailError}</p>` : nothing}
 
-      <h4>Subtareas (${this.subtasks.length})</h4>
+      <h4>${t('ui.subtasksHeading', { count: this.subtasks.length })}</h4>
       ${this.subtasks.length
         ? this.subtasks.map(
             (s) => html`<div class="subtask">
               <span class="t">${s.task_number} — ${s.title}</span>
               ${this.renderBadge(s.status)}
-              <ion-button size="small" fill="clear" @click=${() => this.drillDown(s)}>Abrir</ion-button>
+              <ion-button size="small" fill="clear" @click=${() => this.drillDown(s)}>${t('ui.actionOpen')}</ion-button>
             </div>`,
           )
-        : html`<p class="empty">Sin subtareas.</p>`}
+        : html`<p class="empty">${t('ui.emptySubtasks')}</p>`}
       <form class="comment-form" @submit=${(e: Event) => this.addSubtask(e)}>
-        <ion-input placeholder="Nueva subtarea…" .value=${this.newSubtaskTitle}
+        <ion-input placeholder=${t('ui.newSubtaskPlaceholder')} .value=${this.newSubtaskTitle}
           @ionInput=${(e: any) => (this.newSubtaskTitle = e.target.value)}></ion-input>
         <ion-button type="submit" size="small" ?disabled=${this.detailBusy || !this.newSubtaskTitle}>
-          Añadir subtarea</ion-button>
+          ${t('ui.actionAddSubtask')}</ion-button>
       </form>
 
-      <h4>Comentarios (${this.comments.length})</h4>
+      <h4>${t('ui.commentsHeading', { count: this.comments.length })}</h4>
       ${this.comments.length
         ? this.comments.map(
             (c) => html`<div class="comment">
-              <div class="who">${c.author_ref ?? 'anónimo'} · ${String(c.created_at).slice(0, 16).replace('T', ' ')}</div>
+              <div class="who">${c.author_ref ?? t('ui.anonymous')} · ${String(c.created_at).slice(0, 16).replace('T', ' ')}</div>
               <p>${c.comment}</p>
             </div>`,
           )
-        : html`<p class="empty">Sin comentarios.</p>`}
+        : html`<p class="empty">${t('ui.emptyComments')}</p>`}
       <form class="comment-form" @submit=${(e: Event) => this.addComment(e)}>
-        <ion-textarea auto-grow rows="1" placeholder="Añadir comentario…" .value=${this.newComment}
+        <ion-textarea auto-grow rows="1" placeholder=${t('ui.addCommentPlaceholder')} .value=${this.newComment}
           @ionInput=${(e: any) => (this.newComment = e.target.value)}></ion-textarea>
         <ion-button type="submit" size="small" ?disabled=${this.detailBusy || !this.newComment.trim()}>
-          Comentar</ion-button>
+          ${t('ui.actionComment')}</ion-button>
       </form>
     </section>`;
   }
 
   private renderAll() {
     return html`<form class="form" @submit=${(e: Event) => this.createTask(e)}>
-        <ion-input placeholder="Nueva tarea…" .value=${this.newTitle} @ionInput=${(e: any) => (this.newTitle = e.target.value)}></ion-input>
-        <ion-select placeholder="Prioridad…" .value=${this.newPriority} @ionChange=${(e: any) => (this.newPriority = e.target.value)}>
-          ${Object.entries(PRIORITY_LABELS).map(
-            ([k, v]) => html`<ion-select-option .value=${k}>${v}</ion-select-option>`,
+        <ion-input placeholder=${t('ui.newTaskPlaceholder')} .value=${this.newTitle} @ionInput=${(e: any) => (this.newTitle = e.target.value)}></ion-input>
+        <ion-select placeholder=${t('ui.priorityPlaceholder')} .value=${this.newPriority} @ionChange=${(e: any) => (this.newPriority = e.target.value)}>
+          ${PRIORITY_VALUES.map(
+            (k) => html`<ion-select-option .value=${k}>${priorityLabel(k)}</ion-select-option>`,
           )}
         </ion-select>
-        <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newTitle}>${this.saving ? 'Guardando…' : 'Añadir'}</ion-button>
+        <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newTitle}>${this.saving ? t('ui.saving') : t('ui.add')}</ion-button>
       </form>
       ${this.formError ? html`<p class="err">${this.formError}</p>` : nothing}
       ${this.ctrl?.error ? html`<p class="err">${this.ctrl.error}</p>` : nothing}
-      <ok-data-table .serverSide=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? 'desc'} .searchable=${true} .searchPlaceholder=${"Buscar nº o título…"} .actions=${this.rowActions} .emptyMessage=${this.ctrl?.loading ? 'Cargando…' : 'Sin tareas.'} @rowAction=${(e: CustomEvent) => this.onRowAction(e)} @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)} @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) => this.ctrl.setSort(e.detail.sort, e.detail.dir)} @searchChange=${(e: CustomEvent<string>) => this.ctrl.setSearch(e.detail)} @filterChange=${(e: CustomEvent<{ col: string; value: unknown }>) => this.ctrl.setFilter(e.detail.col, e.detail.value)}></ok-data-table>`;
+      <ok-data-table .serverSide=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? 'desc'} .searchable=${true} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .emptyMessage=${this.ctrl?.loading ? t('ui.loading') : t('ui.emptyTasks')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)} @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)} @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) => this.ctrl.setSort(e.detail.sort, e.detail.dir)} @searchChange=${(e: CustomEvent<string>) => this.ctrl.setSearch(e.detail)} @filterChange=${(e: CustomEvent<{ col: string; value: unknown }>) => this.ctrl.setFilter(e.detail.col, e.detail.value)}></ok-data-table>`;
   }
 
   private renderMine() {
     if (!this.userRef) {
-      return html`<p class="empty">Sin sesión de usuario en el shell: la vista "Mis tareas" no está disponible.</p>`;
+      return html`<p class="empty">${t('ui.noSessionMine')}</p>`;
     }
     return html`${this.myError ? html`<p class="err">${this.myError}</p>` : nothing}
-      <ok-data-table .columns=${this.columns} .rows=${this.myTasks as unknown as Record<string, unknown>[]} .searchKeys=${['task_number', 'title']} .searchPlaceholder=${"Buscar nº o título…"} .actions=${this.rowActions} .emptyMessage=${this.myLoading ? 'Cargando…' : 'Sin tareas abiertas asignadas a ti.'} @rowAction=${(e: CustomEvent) => this.onRowAction(e)}></ok-data-table>`;
+      <ok-data-table .columns=${this.columns} .rows=${this.myTasks as unknown as Record<string, unknown>[]} .searchKeys=${['task_number', 'title']} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .emptyMessage=${this.myLoading ? t('ui.loading') : t('ui.emptyMine')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)}></ok-data-table>`;
   }
 
   render() {
     return html`<div>
         <header>
-          <h2>Tareas</h2>
+          <h2>${t('ui.titleTasks')}</h2>
           <ion-segment .value=${this.view} @ionChange=${(e: any) => this.setView(e.detail.value)}>
-            <ion-segment-button value="all"><ion-label>Todas</ion-label></ion-segment-button>
+            <ion-segment-button value="all"><ion-label>${t('ui.tabAll')}</ion-label></ion-segment-button>
             ${this.userRef
-              ? html`<ion-segment-button value="mine"><ion-label>Mis tareas</ion-label></ion-segment-button>`
+              ? html`<ion-segment-button value="mine"><ion-label>${t('ui.tabMine')}</ion-label></ion-segment-button>`
               : nothing}
           </ion-segment>
         </header>
