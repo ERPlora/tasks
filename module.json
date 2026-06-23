@@ -1,7 +1,7 @@
 {
   "id": "tasks",
   "name": "Tasks",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "agent": {
     "description": "Manages internal staff tasks and projects: create, assign, update status, complete tasks, add comments, and organise tasks into projects.",
     "keywords": [
@@ -59,7 +59,6 @@
     "tasks.tasks.list": {
       "permission": "tasks.view_task",
       "sql": "queries/tasks_list.sql",
-      "schema": "schemas/tasks_list.json",
       "list": {
         "search": [
           "task_number",
@@ -144,7 +143,6 @@
     "tasks.tasks.subtasks": {
       "permission": "tasks.view_task",
       "sql": "queries/subtasks_list.sql",
-      "schema": "schemas/subtasks_list.json",
       "list": {
         "search": [
           "task_number",
@@ -221,7 +219,6 @@
     "tasks.tasks.comments": {
       "permission": "tasks.view_task",
       "sql": "queries/comments_list.sql",
-      "schema": "schemas/comments_list.json",
       "list": {
         "search": [
           "author_ref"
@@ -266,7 +263,6 @@
     "tasks.projects.list": {
       "permission": "tasks.view_task",
       "sql": "queries/projects_list.sql",
-      "schema": "schemas/projects_list.json",
       "list": {
         "search": [
           "code",
