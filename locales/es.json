@@ -54,6 +54,7 @@
     "dueLabel": "Vence:",
     "completedLabel": "Completada:",
     "assignedToLabel": "Asignada a:",
+    "assignToLabel": "Asignar a",
     "createdLabel": "Creada:",
     "subtasksHeading": "Subtareas ({count})",
     "commentsHeading": "Comentarios ({count})",

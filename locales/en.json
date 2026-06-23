@@ -54,6 +54,7 @@
     "dueLabel": "Due:",
     "completedLabel": "Completed:",
     "assignedToLabel": "Assigned to:",
+    "assignToLabel": "Assign to",
     "createdLabel": "Created:",
     "subtasksHeading": "Subtasks ({count})",
     "commentsHeading": "Comments ({count})",

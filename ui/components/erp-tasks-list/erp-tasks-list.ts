@@ -91,11 +91,10 @@ export class ErpTasksList extends LitElement {
     :host { display:block; font-family: system-ui, sans-serif; color: var(--ink, #1c1b18); }
     header { display:flex; gap:.5rem; align-items:center; margin-bottom:.75rem; }
     h2 { margin:0; font-size:1.15rem; flex:1; }
-    .form { display:flex; gap:.5rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 1rem; }
+    .form { display:flex; gap:.75rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 1rem; }
     .form ion-input, .form ion-select,
     .detail ion-input, .detail ion-select, .detail ion-textarea {
-      --background:var(--surface-2,#f7f4ec); border:1px solid var(--line,#e7e2d6);
-      border-radius:8px; min-width:8rem;
+      flex:1 1 11rem; min-width:9rem;
     }
     .err { color:#d9480f; font-weight:600; }
     .detail { border:1px solid var(--line,#e7e2d6); border-radius:12px; padding:1rem; margin:0 0 1rem;
@@ -107,7 +106,7 @@ export class ErpTasksList extends LitElement {
     .muted { color:var(--ink-2,#6f6a5e); }
     .desc { white-space:pre-wrap; margin:.25rem 0 .75rem; }
     .meta { display:flex; gap:1.25rem; flex-wrap:wrap; font-size:.9rem; margin-bottom:.75rem; }
-    .actions-row { display:flex; gap:.5rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 .75rem; }
+    .actions-row { display:flex; gap:.75rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 .75rem; }
     .badge { display:inline-block; padding:.1rem .55rem; border-radius:999px; font-size:.78rem;
       font-weight:600; background:var(--surface-2,#f0ece1); }
     .badge.done { background:#d3f9d8; color:#2b8a3e; }
@@ -118,7 +117,7 @@ export class ErpTasksList extends LitElement {
     .comment { border-top:1px solid var(--line,#e7e2d6); padding:.45rem 0; }
     .comment .who { font-size:.8rem; color:var(--ink-2,#6f6a5e); margin-bottom:.15rem; }
     .comment p { margin:0; white-space:pre-wrap; }
-    .comment-form { display:flex; gap:.5rem; align-items:end; margin-top:.5rem; }
+    .comment-form { display:flex; gap:.75rem; align-items:end; margin-top:.5rem; }
     .comment-form ion-textarea { flex:1; }
     .subtask { display:flex; gap:.6rem; align-items:center; border-top:1px solid var(--line,#e7e2d6);
       padding:.35rem 0; }
@@ -464,7 +463,7 @@ export class ErpTasksList extends LitElement {
       </div>
 
       <div class="actions-row">
-        <ion-select label=${t('ui.colStatus')} label-placement="stacked" .value=${task.status}
+        <ion-select fill="outline" label=${t('ui.colStatus')} label-placement="floating" .value=${task.status}
           ?disabled=${this.detailBusy}
           @ionChange=${(e: any) => this.changeStatus(e.target.value)}>
           ${STATUS_VALUES.map(
@@ -473,7 +472,7 @@ export class ErpTasksList extends LitElement {
         </ion-select>
         <ion-button size="small" color="success" ?disabled=${this.detailBusy || closed}
           @click=${() => this.completeTask()}>${t('ui.actionComplete')}</ion-button>
-        <ion-input placeholder=${t('ui.userUuidPlaceholder')} .value=${this.assignRef}
+        <ion-input fill="outline" label-placement="floating" label=${t('ui.assignToLabel')} placeholder=${t('ui.userUuidPlaceholder')} .value=${this.assignRef}
           @ionInput=${(e: any) => (this.assignRef = e.target.value)}></ion-input>
         <ion-button size="small" ?disabled=${this.detailBusy}
           @click=${() => this.assignTask(this.assignRef)}>${t('ui.actionAssign')}</ion-button>
@@ -499,7 +498,7 @@ export class ErpTasksList extends LitElement {
           )
         : html`<p class="empty">${t('ui.emptySubtasks')}</p>`}
       <form class="comment-form" @submit=${(e: Event) => this.addSubtask(e)}>
-        <ion-input placeholder=${t('ui.newSubtaskPlaceholder')} .value=${this.newSubtaskTitle}
+        <ion-input fill="outline" label-placement="floating" label=${t('ui.actionAddSubtask')} placeholder=${t('ui.newSubtaskPlaceholder')} .value=${this.newSubtaskTitle}
           @ionInput=${(e: any) => (this.newSubtaskTitle = e.target.value)}></ion-input>
         <ion-button type="submit" size="small" ?disabled=${this.detailBusy || !this.newSubtaskTitle}>
           ${t('ui.actionAddSubtask')}</ion-button>
@@ -515,7 +514,7 @@ export class ErpTasksList extends LitElement {
           )
         : html`<p class="empty">${t('ui.emptyComments')}</p>`}
       <form class="comment-form" @submit=${(e: Event) => this.addComment(e)}>
-        <ion-textarea auto-grow rows="1" placeholder=${t('ui.addCommentPlaceholder')} .value=${this.newComment}
+        <ion-textarea fill="outline" label-placement="floating" label=${t('ui.actionComment')} auto-grow rows="1" placeholder=${t('ui.addCommentPlaceholder')} .value=${this.newComment}
           @ionInput=${(e: any) => (this.newComment = e.target.value)}></ion-textarea>
         <ion-button type="submit" size="small" ?disabled=${this.detailBusy || !this.newComment.trim()}>
           ${t('ui.actionComment')}</ion-button>
@@ -525,8 +524,8 @@ export class ErpTasksList extends LitElement {
 
   private renderAll() {
     return html`<form class="form" @submit=${(e: Event) => this.createTask(e)}>
-        <ion-input placeholder=${t('ui.newTaskPlaceholder')} .value=${this.newTitle} @ionInput=${(e: any) => (this.newTitle = e.target.value)}></ion-input>
-        <ion-select placeholder=${t('ui.priorityPlaceholder')} .value=${this.newPriority} @ionChange=${(e: any) => (this.newPriority = e.target.value)}>
+        <ion-input fill="outline" label-placement="floating" label=${t('ui.colTitle')} placeholder=${t('ui.newTaskPlaceholder')} .value=${this.newTitle} @ionInput=${(e: any) => (this.newTitle = e.target.value)}></ion-input>
+        <ion-select fill="outline" label-placement="floating" label=${t('ui.colPriority')} placeholder=${t('ui.priorityPlaceholder')} .value=${this.newPriority} @ionChange=${(e: any) => (this.newPriority = e.target.value)}>
           ${PRIORITY_VALUES.map(
             (k) => html`<ion-select-option .value=${k}>${priorityLabel(k)}</ion-select-option>`,
           )}
