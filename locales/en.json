@@ -1,0 +1,11 @@
+{
+  "name": "Tasks",
+  "navigation": {
+    "all": {
+      "label": "Tasks"
+    },
+    "projects": {
+      "label": "Projects"
+    }
+  }
+}
