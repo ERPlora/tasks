@@ -88,7 +88,7 @@ function fmtDate(iso: string | null | undefined): string {
 
 export class ErpTasksList extends LitElement {
   static styles = css`
-    :host { display:block; font-family: system-ui, sans-serif; color: var(--ink, #1c1b18); }
+    :host { display:block; font-family: system-ui, sans-serif; color: var(--ion-text-color, #1c1b18); }
     header { display:flex; gap:.5rem; align-items:center; margin-bottom:.75rem; }
     h2 { margin:0; font-size:1.15rem; flex:1; }
     .form { display:flex; gap:.75rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 1rem; }
@@ -97,32 +97,32 @@ export class ErpTasksList extends LitElement {
       flex:1 1 11rem; min-width:9rem;
     }
     .err { color:#d9480f; font-weight:600; }
-    .detail { border:1px solid var(--line,#e7e2d6); border-radius:12px; padding:1rem; margin:0 0 1rem;
-      background:var(--surface-1,#fffdf7); }
+    .detail { border:1px solid var(--ion-border-color,#e7e2d6); border-radius:12px; padding:1rem; margin:0 0 1rem;
+      background:var(--ion-card-background,#fffdf7); }
     .detail-head { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; margin-bottom:.35rem; }
     .detail-head h3 { margin:0; font-size:1.05rem; flex:1; }
     .crumb { font-size:.85rem; margin-bottom:.5rem; }
     .crumb ion-button { vertical-align:middle; }
-    .muted { color:var(--ink-2,#6f6a5e); }
+    .muted { color:var(--ion-color-medium,#6f6a5e); }
     .desc { white-space:pre-wrap; margin:.25rem 0 .75rem; }
     .meta { display:flex; gap:1.25rem; flex-wrap:wrap; font-size:.9rem; margin-bottom:.75rem; }
     .actions-row { display:flex; gap:.75rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 .75rem; }
     .badge { display:inline-block; padding:.1rem .55rem; border-radius:999px; font-size:.78rem;
-      font-weight:600; background:var(--surface-2,#f0ece1); }
+      font-weight:600; background:var(--ok-surface-2, var(--ion-color-step-50, rgba(var(--ion-text-color-rgb, 24, 24, 27), 0.04))); }
     .badge.done { background:#d3f9d8; color:#2b8a3e; }
     .badge.cancelled { background:#ffe3e3; color:#c92a2a; }
     .badge.in_progress { background:#d0ebff; color:#1971c2; }
     .badge.blocked { background:#fff3bf; color:#e67700; }
     h4 { margin:1rem 0 .4rem; font-size:.95rem; }
-    .comment { border-top:1px solid var(--line,#e7e2d6); padding:.45rem 0; }
-    .comment .who { font-size:.8rem; color:var(--ink-2,#6f6a5e); margin-bottom:.15rem; }
+    .comment { border-top:1px solid var(--ion-border-color,#e7e2d6); padding:.45rem 0; }
+    .comment .who { font-size:.8rem; color:var(--ion-color-medium,#6f6a5e); margin-bottom:.15rem; }
     .comment p { margin:0; white-space:pre-wrap; }
     .comment-form { display:flex; gap:.75rem; align-items:end; margin-top:.5rem; }
     .comment-form ion-textarea { flex:1; }
-    .subtask { display:flex; gap:.6rem; align-items:center; border-top:1px solid var(--line,#e7e2d6);
+    .subtask { display:flex; gap:.6rem; align-items:center; border-top:1px solid var(--ion-border-color,#e7e2d6);
       padding:.35rem 0; }
     .subtask .t { flex:1; }
-    .empty { color:var(--ink-2,#6f6a5e); font-size:.9rem; padding:.35rem 0; }
+    .empty { color:var(--ion-color-medium,#6f6a5e); font-size:.9rem; padding:.35rem 0; }
   `;
 
   @state() view: 'all' | 'mine' = 'all';
