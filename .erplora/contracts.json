@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "module": "tasks",
+  "consumes": {
+    "queries": [
+      "tasks.projects.list",
+      "tasks.tasks.comments",
+      "tasks.tasks.get",
+      "tasks.tasks.list",
+      "tasks.tasks.my",
+      "tasks.tasks.subtasks"
+    ],
+    "optional_queries": [],
+    "commands": [
+      "tasks.projects.create",
+      "tasks.tasks.add_comment",
+      "tasks.tasks.assign",
+      "tasks.tasks.complete",
+      "tasks.tasks.create",
+      "tasks.tasks.update_status"
+    ],
+    "events": [
+      "tasks.comment.added",
+      "tasks.project.created",
+      "tasks.task.assigned",
+      "tasks.task.completed",
+      "tasks.task.created",
+      "tasks.task.status_changed"
+    ],
+    "slots": []
+  }
+}

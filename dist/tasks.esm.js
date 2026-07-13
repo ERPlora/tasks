@@ -3297,14 +3297,13 @@ var ErpTasksList = class extends i3 {
     });
     await this.ctrl.load();
     try {
-      const events = [
-        "tasks.task.created",
-        "tasks.task.status_changed",
-        "tasks.task.completed",
-        "tasks.task.assigned",
-        "tasks.comment.added"
+      const offs = [
+        erplora().on("tasks.task.created", () => this.onDomainEvent()),
+        erplora().on("tasks.task.status_changed", () => this.onDomainEvent()),
+        erplora().on("tasks.task.completed", () => this.onDomainEvent()),
+        erplora().on("tasks.task.assigned", () => this.onDomainEvent()),
+        erplora().on("tasks.comment.added", () => this.onDomainEvent())
       ];
-      const offs = events.map((e5) => erplora().on(e5, () => this.onDomainEvent()));
       this.unsub = () => offs.forEach((off) => off());
     } catch {
     }
@@ -3386,11 +3385,12 @@ var ErpTasksList = class extends i3 {
     this.detailError = "";
   }
   // ── Commands ──────────────────────────────────────────────────────────────
-  async runCommand(name, payload, refreshDetail = true) {
+  // El helper recibe el THUNK, no el nombre (ADR-0127: el literal del contrato vive EN la llamada).
+  async runCommand(exec, refreshDetail = true) {
     this.detailBusy = true;
     this.detailError = "";
     try {
-      await erplora().command(name, payload);
+      await exec();
       await this.ctrl.load();
       if (this.view === "mine") await this.loadMyTasks();
       if (refreshDetail && this.detail) await this.loadDetail(this.detail.id, { keepTrail: true });
@@ -3439,42 +3439,42 @@ var ErpTasksList = class extends i3 {
         this.openDetail(task);
         break;
       case "start":
-        await this.runCommand("tasks.tasks.update_status", { task_id: task.id, new_status: "in_progress" }, false);
+        await this.runCommand(() => erplora().command("tasks.tasks.update_status", { task_id: task.id, new_status: "in_progress" }), false);
         break;
       case "complete":
-        await this.runCommand("tasks.tasks.complete", { task_id: task.id }, false);
+        await this.runCommand(() => erplora().command("tasks.tasks.complete", { task_id: task.id }), false);
         break;
     }
   }
   async changeStatus(newStatus) {
     if (!this.detail || !newStatus || newStatus === this.detail.status) return;
-    await this.runCommand("tasks.tasks.update_status", { task_id: this.detail.id, new_status: newStatus });
+    await this.runCommand(() => erplora().command("tasks.tasks.update_status", { task_id: this.detail.id, new_status: newStatus }));
   }
   async completeTask() {
     if (!this.detail) return;
-    await this.runCommand("tasks.tasks.complete", { task_id: this.detail.id });
+    await this.runCommand(() => erplora().command("tasks.tasks.complete", { task_id: this.detail.id }));
   }
   async assignTask(ref) {
     if (!this.detail) return;
-    await this.runCommand("tasks.tasks.assign", {
+    await this.runCommand(() => erplora().command("tasks.tasks.assign", {
       task_id: this.detail.id,
       assigned_to_ref: ref && ref.trim() ? ref.trim() : null
-    });
+    }));
   }
   async addComment(ev) {
     ev.preventDefault();
     if (!this.detail || !this.newComment.trim()) return;
-    await this.runCommand("tasks.tasks.add_comment", {
+    await this.runCommand(() => erplora().command("tasks.tasks.add_comment", {
       task_id: this.detail.id,
       comment: this.newComment.trim(),
       author_ref: this.userRef || null
-    });
+    }));
     if (!this.detailError) this.newComment = "";
   }
   async addSubtask(ev) {
     ev.preventDefault();
     if (!this.detail || !this.newSubtaskTitle.trim()) return;
-    await this.runCommand("tasks.tasks.create", {
+    await this.runCommand(() => erplora().command("tasks.tasks.create", {
       title: this.newSubtaskTitle.trim(),
       description: "",
       project_id: this.detail.project_id,
@@ -3484,7 +3484,7 @@ var ErpTasksList = class extends i3 {
       parent_task_id: this.detail.id,
       created_by_ref: null,
       tags: []
-    });
+    }));
     if (!this.detailError) this.newSubtaskTitle = "";
   }
   // ── Render ────────────────────────────────────────────────────────────────
