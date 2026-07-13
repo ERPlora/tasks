@@ -9,7 +9,7 @@ var __decorateClass = (decorators, target, key, kind) => {
   return result;
 };
 
-// ../../module-toolkit/node_modules/@lit-labs/ssr-dom-shim/lib/element-internals.js
+// node_modules/.pnpm/@lit-labs+ssr-dom-shim@1.6.0/node_modules/@lit-labs/ssr-dom-shim/lib/element-internals.js
 var ElementInternalsShim = class ElementInternals {
   get shadowRoot() {
     return this.__host.__shadowRoot;
@@ -88,7 +88,7 @@ var ElementInternalsShim = class ElementInternals {
   }
 };
 
-// ../../module-toolkit/node_modules/@lit-labs/ssr-dom-shim/lib/events.js
+// node_modules/.pnpm/@lit-labs+ssr-dom-shim@1.6.0/node_modules/@lit-labs/ssr-dom-shim/lib/events.js
 var __classPrivateFieldSet = function(receiver, state, value, kind, f3) {
   if (kind === "m") throw new TypeError("Private method is not writable");
   if (kind === "a" && !f3) throw new TypeError("Private accessor was defined without a setter");
@@ -246,7 +246,7 @@ Object.defineProperties(CustomEventShim.prototype, {
 var EventShimWithRealType = EventShim;
 var CustomEventShimWithRealType = CustomEventShim;
 
-// ../../module-toolkit/node_modules/@lit-labs/ssr-dom-shim/lib/css.js
+// node_modules/.pnpm/@lit-labs+ssr-dom-shim@1.6.0/node_modules/@lit-labs/ssr-dom-shim/lib/css.js
 var _a2;
 var CSSRuleShim = (_a2 = class CSSRule {
   constructor() {
@@ -277,7 +277,7 @@ var CSSRuleShim = (_a2 = class CSSRule {
   }
 }, _a2.STYLE_RULE = 1, _a2.CHARSET_RULE = 2, _a2.IMPORT_RULE = 3, _a2.MEDIA_RULE = 4, _a2.FONT_FACE_RULE = 5, _a2.PAGE_RULE = 6, _a2.NAMESPACE_RULE = 10, _a2.KEYFRAMES_RULE = 7, _a2.KEYFRAME_RULE = 8, _a2.SUPPORTS_RULE = 12, _a2.COUNTER_STYLE_RULE = 11, _a2.FONT_FEATURE_VALUES_RULE = 14, _a2.MARGIN_RULE = 9, _a2);
 
-// ../../module-toolkit/node_modules/@lit-labs/ssr-dom-shim/index.js
+// node_modules/.pnpm/@lit-labs+ssr-dom-shim@1.6.0/node_modules/@lit-labs/ssr-dom-shim/index.js
 globalThis.Event ??= EventShimWithRealType;
 globalThis.CustomEvent ??= CustomEventShimWithRealType;
 var constructionToken = Symbol();
@@ -674,7 +674,7 @@ var CustomElementRegistryShimWithRealType = CustomElementRegistry;
 var customElements2 = new CustomElementRegistryShimWithRealType();
 var windowShim = new WindowShim(constructionToken);
 
-// ../../module-toolkit/node_modules/@lit/reactive-element/node/css-tag.js
+// node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/node/css-tag.js
 var t = globalThis;
 var e = t.ShadowRoot && (void 0 === t.ShadyCSS || t.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
 var s = Symbol();
@@ -719,7 +719,7 @@ var c = e || void 0 === t.CSSStyleSheet ? (t7) => t7 : (t7) => t7 instanceof CSS
   return r(e5);
 })(t7) : t7;
 
-// ../../module-toolkit/node_modules/@lit/reactive-element/node/reactive-element.js
+// node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/node/reactive-element.js
 var { is: h, defineProperty: r2, getOwnPropertyDescriptor: o2, getOwnPropertyNames: n2, getOwnPropertySymbols: a, getPrototypeOf: c2 } = Object;
 var l = globalThis;
 l.customElements ??= customElements2;
@@ -942,7 +942,7 @@ var g = class extends (globalThis.HTMLElement ?? HTMLElementShimWithRealType) {
 };
 g.elementStyles = [], g.shadowRootOptions = { mode: "open" }, g[f("elementProperties")] = /* @__PURE__ */ new Map(), g[f("finalized")] = /* @__PURE__ */ new Map(), u?.({ ReactiveElement: g }), (l.reactiveElementVersions ??= []).push("2.1.2");
 
-// ../../module-toolkit/node_modules/lit-html/lit-html.js
+// node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/lit-html.js
 var t2 = globalThis;
 var i2 = (t7) => t7;
 var s2 = t2.trustedTypes;
@@ -1197,7 +1197,7 @@ var D = (t7, i7, s5) => {
   return h4._$AI(t7), h4;
 };
 
-// ../../module-toolkit/node_modules/lit-element/lit-element.js
+// node_modules/.pnpm/lit-element@4.2.2/node_modules/lit-element/lit-element.js
 var s3 = globalThis;
 var i3 = class extends g {
   constructor() {
@@ -1226,7 +1226,7 @@ var o4 = s3.litElementPolyfillSupport;
 o4?.({ LitElement: i3 });
 (s3.litElementVersions ??= []).push("4.2.2");
 
-// ../../module-toolkit/node_modules/@lit/reactive-element/node/decorators/property.js
+// node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/node/decorators/property.js
 var o5 = { attribute: true, type: String, converter: b, reflect: false, hasChanged: m };
 var r4 = (t7 = o5, e5, r6) => {
   const { kind: n6, metadata: i7 } = r6;
@@ -1256,19 +1256,19 @@ function n4(t7) {
   })(t7, e5, o7);
 }
 
-// ../../module-toolkit/node_modules/@lit/reactive-element/node/decorators/state.js
+// node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/node/decorators/state.js
 function r5(r6) {
   return n4({ ...r6, state: true, attribute: false });
 }
 
-// ../../outfitkit/dist/define.js
+// node_modules/.pnpm/@erplora+outfitkit@file+..+outfitkit/node_modules/@erplora/outfitkit/dist/define.js
 function define(tag, ctor) {
   if (typeof customElements !== "undefined" && !customElements.get(tag)) {
     customElements.define(tag, ctor);
   }
 }
 
-// ../../module-toolkit/node_modules/lit-html/directive.js
+// node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/directive.js
 var t3 = { ATTRIBUTE: 1, CHILD: 2, PROPERTY: 3, BOOLEAN_ATTRIBUTE: 4, EVENT: 5, ELEMENT: 6 };
 var e4 = (t7) => (...e5) => ({ _$litDirective$: t7, values: e5 });
 var i4 = class {
@@ -1288,7 +1288,7 @@ var i4 = class {
   }
 };
 
-// ../../module-toolkit/node_modules/lit-html/directive-helpers.js
+// node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/directive-helpers.js
 var { I: t4 } = j;
 var i5 = (o7) => o7;
 var s4 = () => document.createComment("");
@@ -1321,7 +1321,7 @@ var h3 = (o7) => {
   o7._$AR(), o7._$AA.remove();
 };
 
-// ../../module-toolkit/node_modules/lit-html/directives/repeat.js
+// node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/directives/repeat.js
 var u4 = (e5, s5, t7) => {
   const r6 = /* @__PURE__ */ new Map();
   for (let l3 = s5; l3 <= t7; l3++) r6.set(e5[l3], l3);
@@ -1374,7 +1374,7 @@ var c4 = e4(class extends i4 {
   }
 });
 
-// ../../module-toolkit/node_modules/lit-html/directives/style-map.js
+// node_modules/.pnpm/lit-html@3.3.3/node_modules/lit-html/directives/style-map.js
 var n5 = "important";
 var i6 = " !" + n5;
 var o6 = e4(class extends i4 {
@@ -1403,7 +1403,7 @@ var o6 = e4(class extends i4 {
   }
 });
 
-// ../../outfitkit/dist/shared/icons.js
+// node_modules/.pnpm/@erplora+outfitkit@file+..+outfitkit/node_modules/@erplora/outfitkit/dist/shared/icons.js
 var rawAdd = '<svg viewBox="0 0 512 512" width="1.2em" height="1.2em" ><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M256 112v288m144-144H112"/></svg>';
 var rawAlertCircle = '<svg viewBox="0 0 512 512" width="1.2em" height="1.2em" ><path fill="currentColor" d="M256 48C141.31 48 48 141.31 48 256s93.31 208 208 208s208-93.31 208-208S370.69 48 256 48m0 319.91a20 20 0 1 1 20-20a20 20 0 0 1-20 20m21.72-201.15l-5.74 122a16 16 0 0 1-32 0l-5.74-121.94v-.05a21.74 21.74 0 1 1 43.44 0Z"/></svg>';
 var rawAlertCircleOutline = '<svg viewBox="0 0 512 512" width="1.2em" height="1.2em" ><path fill="none" stroke="currentColor" stroke-miterlimit="10" stroke-width="32" d="M448 256c0-106-86-192-192-192S64 150 64 256s86 192 192 192s192-86 192-192Z"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M250.26 166.05L256 288l5.73-121.95a5.74 5.74 0 0 0-5.79-6h0a5.74 5.74 0 0 0-5.68 6"/><path fill="currentColor" d="M256 367.91a20 20 0 1 1 20-20a20 20 0 0 1-20 20"/></svg>';
@@ -1551,7 +1551,7 @@ function okIcon(value) {
   return BY_NAME[value] ?? value;
 }
 
-// ../../outfitkit/dist/ok-data-table.js
+// node_modules/.pnpm/@erplora+outfitkit@file+..+outfitkit/node_modules/@erplora/outfitkit/dist/ok-data-table.js
 var __defProp2 = Object.defineProperty;
 var __decorateClass2 = (decorators, target, key, kind) => {
   var result = void 0;
@@ -2858,7 +2858,7 @@ __decorateClass2([
 ], OkDataTable.prototype, "menuOpen");
 define("ok-data-table", OkDataTable);
 
-// ../../hub/packages/module-sdk/src/index.ts
+// node_modules/.pnpm/@erplora+module-sdk@file+..+hub+packages+module-sdk/node_modules/@erplora/module-sdk/src/index.ts
 function isEmpty(v3) {
   return v3 === null || v3 === void 0 || v3 === "";
 }
@@ -2976,7 +2976,7 @@ function createListController(client, queryName, onChange = () => {
   return new ListController(client, queryName, onChange, opts);
 }
 
-// tasks/locales/es.json
+// modules/tasks/locales/es.json
 var es_default = {
   name: "Tareas",
   navigation: {
@@ -3062,7 +3062,7 @@ var es_default = {
   }
 };
 
-// tasks/locales/en.json
+// modules/tasks/locales/en.json
 var en_default = {
   name: "Tasks",
   navigation: {
@@ -3148,7 +3148,7 @@ var en_default = {
   }
 };
 
-// tasks/ui/components/erp-tasks-list/erp-tasks-list.ts
+// modules/tasks/ui/components/erp-tasks-list/erp-tasks-list.ts
 var CATALOG = { es: es_default, en: en_default };
 var STATUS_VALUES = ["todo", "in_progress", "blocked", "done", "cancelled"];
 var PRIORITY_VALUES = ["low", "medium", "high", "urgent"];
@@ -3206,11 +3206,15 @@ var ErpTasksList = class extends i3 {
   }
   static {
     this.styles = i`
-    :host { display:block; font-family: system-ui, sans-serif; color: var(--ion-text-color, #1c1b18); }
+    /* Cadena de altura: sin ella, el modo fill de la tabla no tiene alto que llenar. */
+    :host { display:flex; flex-direction:column; height:100%; min-height:0; font-family: system-ui, sans-serif; color: var(--ion-text-color, #1c1b18); }
+    .page { display:flex; flex-direction:column; min-height:0; flex:1 1 auto; }
+    .pane { display:flex; flex-direction:column; min-height:0; flex:1 1 auto; }
+    .pane > ok-data-table { flex:1 1 auto; min-height:0; }
     header { display:flex; gap:.5rem; align-items:center; margin-bottom:.75rem; }
-    h2 { margin:0; font-size:1.15rem; flex:1; }
-    .form { display:flex; gap:.75rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 1rem; }
-    .form ion-input, .form ion-select,
+    /* El alta vive en el panel lateral de la tabla: columna estrecha, no fila que se desborda. */
+    .form { display:flex; flex-direction:column; gap:.7rem; }
+    .form ion-button { align-self:flex-end; }
     .detail ion-input, .detail ion-select, .detail ion-textarea {
       flex:1 1 11rem; min-width:9rem;
     }
@@ -3396,6 +3400,10 @@ var ErpTasksList = class extends i3 {
       this.detailBusy = false;
     }
   }
+  /** Referencia al panel lateral de la tabla: guardar lo cierra. */
+  dataTable() {
+    return this.renderRoot.querySelector("ok-data-table");
+  }
   async createTask(ev) {
     ev.preventDefault();
     if (!this.newTitle.trim()) return;
@@ -3415,6 +3423,7 @@ var ErpTasksList = class extends i3 {
       });
       this.newTitle = "";
       this.newPriority = "medium";
+      this.dataTable()?.close();
       await this.ctrl.load();
     } catch (e5) {
       this.formError = e5 instanceof Error ? e5.message : t5("ui.errCreateTask");
@@ -3557,30 +3566,36 @@ var ErpTasksList = class extends i3 {
     </section>`;
   }
   renderAll() {
-    return b2`<form class="form" @submit=${(e5) => this.createTask(e5)}>
-        <ion-input fill="outline" label-placement="floating" label=${t5("ui.colTitle")} placeholder=${t5("ui.newTaskPlaceholder")} .value=${this.newTitle} @ionInput=${(e5) => this.newTitle = e5.target.value}></ion-input>
-        <ion-select fill="outline" label-placement="floating" label=${t5("ui.colPriority")} placeholder=${t5("ui.priorityPlaceholder")} .value=${this.newPriority} @ionChange=${(e5) => this.newPriority = e5.target.value}>
-          ${PRIORITY_VALUES.map(
-      (k2) => b2`<ion-select-option .value=${k2}>${priorityLabel(k2)}</ion-select-option>`
-    )}
-        </ion-select>
-        <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newTitle}>${this.saving ? t5("ui.saving") : t5("ui.add")}</ion-button>
-      </form>
+    return b2`<div class="pane">
       ${this.formError ? b2`<p class="err">${this.formError}</p>` : A}
       ${this.ctrl?.error ? b2`<p class="err">${this.ctrl.error}</p>` : A}
-      <ok-data-table .serverSide=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${t5("ui.searchTasksPlaceholder")} .actions=${this.rowActions} .emptyMessage=${this.ctrl?.loading ? t5("ui.loading") : t5("ui.emptyTasks")} @rowAction=${(e5) => this.onRowAction(e5)} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}></ok-data-table>`;
+      <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${t5("ui.searchTasksPlaceholder")} .actions=${this.rowActions} .emptyMessage=${this.ctrl?.loading ? t5("ui.loading") : t5("ui.emptyTasks")} @rowAction=${(e5) => this.onRowAction(e5)} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}>
+        <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
+             abriría un panel vacío (la tabla no re-renderiza a sus hijos de luz). -->
+        <form slot="create" class="form" @submit=${(e5) => this.createTask(e5)}>
+          <ion-input fill="outline" label-placement="floating" label=${t5("ui.colTitle")} placeholder=${t5("ui.newTaskPlaceholder")} .value=${this.newTitle} @ionInput=${(e5) => this.newTitle = e5.target.value}></ion-input>
+          <ion-select fill="outline" label-placement="floating" label=${t5("ui.colPriority")} placeholder=${t5("ui.priorityPlaceholder")} .value=${this.newPriority} @ionChange=${(e5) => this.newPriority = e5.target.value}>
+            ${PRIORITY_VALUES.map(
+      (k2) => b2`<ion-select-option .value=${k2}>${priorityLabel(k2)}</ion-select-option>`
+    )}
+          </ion-select>
+          <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newTitle}>${this.saving ? t5("ui.saving") : t5("ui.add")}</ion-button>
+        </form>
+      </ok-data-table>
+    </div>`;
   }
   renderMine() {
     if (!this.userRef) {
       return b2`<p class="empty">${t5("ui.noSessionMine")}</p>`;
     }
-    return b2`${this.myError ? b2`<p class="err">${this.myError}</p>` : A}
-      <ok-data-table .columns=${this.columns} .rows=${this.myTasks} .searchKeys=${["task_number", "title"]} .searchPlaceholder=${t5("ui.searchTasksPlaceholder")} .actions=${this.rowActions} .emptyMessage=${this.myLoading ? t5("ui.loading") : t5("ui.emptyMine")} @rowAction=${(e5) => this.onRowAction(e5)}></ok-data-table>`;
+    return b2`<div class="pane">
+      ${this.myError ? b2`<p class="err">${this.myError}</p>` : A}
+      <ok-data-table .fill=${true} .columns=${this.columns} .rows=${this.myTasks} .searchKeys=${["task_number", "title"]} .searchPlaceholder=${t5("ui.searchTasksPlaceholder")} .actions=${this.rowActions} .emptyMessage=${this.myLoading ? t5("ui.loading") : t5("ui.emptyMine")} @rowAction=${(e5) => this.onRowAction(e5)}></ok-data-table>
+    </div>`;
   }
   render() {
-    return b2`<div>
+    return b2`<div class="page">
         <header>
-          <h2>${t5("ui.titleTasks")}</h2>
           <ion-segment .value=${this.view} @ionChange=${(e5) => this.setView(e5.detail.value)}>
             <ion-segment-button value="all"><ion-label>${t5("ui.tabAll")}</ion-label></ion-segment-button>
             ${this.userRef ? b2`<ion-segment-button value="mine"><ion-label>${t5("ui.tabMine")}</ion-label></ion-segment-button>` : A}
@@ -3644,7 +3659,7 @@ __decorateClass([
 ], ErpTasksList.prototype, "trail", 2);
 define("erp-tasks-list", ErpTasksList);
 
-// tasks/ui/components/erp-tasks-projects/erp-tasks-projects.ts
+// modules/tasks/ui/components/erp-tasks-projects/erp-tasks-projects.ts
 var CATALOG2 = { es: es_default, en: en_default };
 function erplora2() {
   const c5 = globalThis.erplora;
@@ -3662,18 +3677,19 @@ var ErpTasksProjects = class extends i3 {
     this.newColor = "";
     this.saving = false;
     this.formError = "";
-    this.tick = 0;
     // Re-render al cambiar el idioma del shell (ADR-0055): el getter `columns` y el texto del
     // template se re-evalúan con el nuevo `erplora.locale`.
     this.onLocaleChange = () => this.requestUpdate();
   }
   static {
     this.styles = i`
-    :host { display:block; font-family: system-ui, sans-serif; color: var(--ion-text-color, #1c1b18); }
-    header { display:flex; gap:.5rem; align-items:center; margin-bottom:.75rem; }
-    h2 { margin:0; font-size:1.15rem; flex:1; }
-    .form { display:flex; gap:.75rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 1rem; }
-    .form ion-input { flex:1 1 11rem; min-width:9rem; }
+    /* Cadena de altura: sin ella, el modo fill de la tabla no tiene alto que llenar. */
+    :host { display:flex; flex-direction:column; height:100%; min-height:0; font-family: system-ui, sans-serif; color: var(--ion-text-color, #1c1b18); }
+    .page { display:flex; flex-direction:column; min-height:0; flex:1 1 auto; }
+    .page > ok-data-table { flex:1 1 auto; min-height:0; }
+    /* El alta vive en el panel lateral de la tabla: columna estrecha, no fila que se desborda. */
+    .form { display:flex; flex-direction:column; gap:.7rem; }
+    .form ion-button { align-self:flex-end; }
     .err { color:#d9480f; font-weight:600; }
   `;
   }
@@ -3721,6 +3737,10 @@ var ErpTasksProjects = class extends i3 {
     super.disconnectedCallback();
     this.unsub?.();
   }
+  /** Referencia al panel lateral de la tabla: guardar lo cierra. */
+  dataTable() {
+    return this.renderRoot.querySelector("ok-data-table");
+  }
   async createProject(ev) {
     ev.preventDefault();
     if (!this.newCode.trim() || !this.newName.trim()) return;
@@ -3736,6 +3756,7 @@ var ErpTasksProjects = class extends i3 {
       this.newCode = "";
       this.newName = "";
       this.newColor = "";
+      this.dataTable()?.close();
       await this.ctrl.load();
     } catch (e5) {
       this.formError = e5 instanceof Error ? e5.message : t6("ui.errCreateProject");
@@ -3744,19 +3765,19 @@ var ErpTasksProjects = class extends i3 {
     }
   }
   render() {
-    return b2`<div>
-        <header>
-          <h2>${t6("ui.titleProjects")}</h2>
-        </header>
-        <form class="form" @submit=${(e5) => this.createProject(e5)}>
-          <ion-input fill="outline" label-placement="floating" label=${t6("ui.colCode")} placeholder=${t6("ui.codePlaceholder")} .value=${this.newCode} @ionInput=${(e5) => this.newCode = e5.target.value}></ion-input>
-          <ion-input fill="outline" label-placement="floating" label=${t6("ui.colName")} .value=${this.newName} @ionInput=${(e5) => this.newName = e5.target.value}></ion-input>
-          <ion-input fill="outline" label-placement="floating" label=${t6("ui.colColor")} placeholder=${t6("ui.colorPlaceholder")} .value=${this.newColor} @ionInput=${(e5) => this.newColor = e5.target.value}></ion-input>
-          <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newCode || !this.newName}>${this.saving ? t6("ui.saving") : t6("ui.add")}</ion-button>
-        </form>
+    return b2`<div class="page">
         ${this.formError ? b2`<p class="err">${this.formError}</p>` : A}
         ${this.ctrl?.error ? b2`<p class="err">${this.ctrl.error}</p>` : A}
-        <ok-data-table .serverSide=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${t6("ui.searchProjectsPlaceholder")} .emptyMessage=${this.ctrl?.loading ? t6("ui.loading") : t6("ui.emptyProjects")} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}></ok-data-table>
+        <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${t6("ui.searchProjectsPlaceholder")} .emptyMessage=${this.ctrl?.loading ? t6("ui.loading") : t6("ui.emptyProjects")} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}>
+          <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
+               abriría un panel vacío (la tabla no re-renderiza a sus hijos de luz). -->
+          <form slot="create" class="form" @submit=${(e5) => this.createProject(e5)}>
+            <ion-input fill="outline" label-placement="floating" label=${t6("ui.colCode")} placeholder=${t6("ui.codePlaceholder")} .value=${this.newCode} @ionInput=${(e5) => this.newCode = e5.target.value}></ion-input>
+            <ion-input fill="outline" label-placement="floating" label=${t6("ui.colName")} .value=${this.newName} @ionInput=${(e5) => this.newName = e5.target.value}></ion-input>
+            <ion-input fill="outline" label-placement="floating" label=${t6("ui.colColor")} placeholder=${t6("ui.colorPlaceholder")} .value=${this.newColor} @ionInput=${(e5) => this.newColor = e5.target.value}></ion-input>
+            <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newCode || !this.newName}>${this.saving ? t6("ui.saving") : t6("ui.add")}</ion-button>
+          </form>
+        </ok-data-table>
       </div>`;
   }
 };
@@ -3775,7 +3796,4 @@ __decorateClass([
 __decorateClass([
   r5()
 ], ErpTasksProjects.prototype, "formError", 2);
-__decorateClass([
-  r5()
-], ErpTasksProjects.prototype, "tick", 2);
 define("erp-tasks-projects", ErpTasksProjects);

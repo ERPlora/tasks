@@ -88,11 +88,15 @@ function fmtDate(iso: string | null | undefined): string {
 
 export class ErpTasksList extends LitElement {
   static styles = css`
-    :host { display:block; font-family: system-ui, sans-serif; color: var(--ion-text-color, #1c1b18); }
+    /* Cadena de altura: sin ella, el modo fill de la tabla no tiene alto que llenar. */
+    :host { display:flex; flex-direction:column; height:100%; min-height:0; font-family: system-ui, sans-serif; color: var(--ion-text-color, #1c1b18); }
+    .page { display:flex; flex-direction:column; min-height:0; flex:1 1 auto; }
+    .pane { display:flex; flex-direction:column; min-height:0; flex:1 1 auto; }
+    .pane > ok-data-table { flex:1 1 auto; min-height:0; }
     header { display:flex; gap:.5rem; align-items:center; margin-bottom:.75rem; }
-    h2 { margin:0; font-size:1.15rem; flex:1; }
-    .form { display:flex; gap:.75rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 1rem; }
-    .form ion-input, .form ion-select,
+    /* El alta vive en el panel lateral de la tabla: columna estrecha, no fila que se desborda. */
+    .form { display:flex; flex-direction:column; gap:.7rem; }
+    .form ion-button { align-self:flex-end; }
     .detail ion-input, .detail ion-select, .detail ion-textarea {
       flex:1 1 11rem; min-width:9rem;
     }
@@ -342,6 +346,13 @@ export class ErpTasksList extends LitElement {
     }
   }
 
+  /** Referencia al panel lateral de la tabla: guardar lo cierra. */
+  private dataTable(): { open(p?: 'filters' | 'create'): void; close(): void } | null {
+    return this.renderRoot.querySelector('ok-data-table') as
+      | { open(p?: 'filters' | 'create'): void; close(): void }
+      | null;
+  }
+
   private async createTask(ev: Event) {
     ev.preventDefault();
     if (!this.newTitle.trim()) return;
@@ -361,6 +372,7 @@ export class ErpTasksList extends LitElement {
       });
       this.newTitle = '';
       this.newPriority = 'medium';
+      this.dataTable()?.close();
       await this.ctrl.load();
     } catch (e) {
       this.formError = e instanceof Error ? e.message : t('ui.errCreateTask');
@@ -523,32 +535,38 @@ export class ErpTasksList extends LitElement {
   }
 
   private renderAll() {
-    return html`<form class="form" @submit=${(e: Event) => this.createTask(e)}>
-        <ion-input fill="outline" label-placement="floating" label=${t('ui.colTitle')} placeholder=${t('ui.newTaskPlaceholder')} .value=${this.newTitle} @ionInput=${(e: any) => (this.newTitle = e.target.value)}></ion-input>
-        <ion-select fill="outline" label-placement="floating" label=${t('ui.colPriority')} placeholder=${t('ui.priorityPlaceholder')} .value=${this.newPriority} @ionChange=${(e: any) => (this.newPriority = e.target.value)}>
-          ${PRIORITY_VALUES.map(
-            (k) => html`<ion-select-option .value=${k}>${priorityLabel(k)}</ion-select-option>`,
-          )}
-        </ion-select>
-        <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newTitle}>${this.saving ? t('ui.saving') : t('ui.add')}</ion-button>
-      </form>
+    return html`<div class="pane">
       ${this.formError ? html`<p class="err">${this.formError}</p>` : nothing}
       ${this.ctrl?.error ? html`<p class="err">${this.ctrl.error}</p>` : nothing}
-      <ok-data-table .serverSide=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? 'desc'} .searchable=${true} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .emptyMessage=${this.ctrl?.loading ? t('ui.loading') : t('ui.emptyTasks')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)} @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)} @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) => this.ctrl.setSort(e.detail.sort, e.detail.dir)} @searchChange=${(e: CustomEvent<string>) => this.ctrl.setSearch(e.detail)} @filterChange=${(e: CustomEvent<{ col: string; value: unknown }>) => this.ctrl.setFilter(e.detail.col, e.detail.value)}></ok-data-table>`;
+      <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? 'desc'} .searchable=${true} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .emptyMessage=${this.ctrl?.loading ? t('ui.loading') : t('ui.emptyTasks')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)} @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)} @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) => this.ctrl.setSort(e.detail.sort, e.detail.dir)} @searchChange=${(e: CustomEvent<string>) => this.ctrl.setSearch(e.detail)} @filterChange=${(e: CustomEvent<{ col: string; value: unknown }>) => this.ctrl.setFilter(e.detail.col, e.detail.value)}>
+        <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
+             abriría un panel vacío (la tabla no re-renderiza a sus hijos de luz). -->
+        <form slot="create" class="form" @submit=${(e: Event) => this.createTask(e)}>
+          <ion-input fill="outline" label-placement="floating" label=${t('ui.colTitle')} placeholder=${t('ui.newTaskPlaceholder')} .value=${this.newTitle} @ionInput=${(e: any) => (this.newTitle = e.target.value)}></ion-input>
+          <ion-select fill="outline" label-placement="floating" label=${t('ui.colPriority')} placeholder=${t('ui.priorityPlaceholder')} .value=${this.newPriority} @ionChange=${(e: any) => (this.newPriority = e.target.value)}>
+            ${PRIORITY_VALUES.map(
+              (k) => html`<ion-select-option .value=${k}>${priorityLabel(k)}</ion-select-option>`,
+            )}
+          </ion-select>
+          <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newTitle}>${this.saving ? t('ui.saving') : t('ui.add')}</ion-button>
+        </form>
+      </ok-data-table>
+    </div>`;
   }
 
   private renderMine() {
     if (!this.userRef) {
       return html`<p class="empty">${t('ui.noSessionMine')}</p>`;
     }
-    return html`${this.myError ? html`<p class="err">${this.myError}</p>` : nothing}
-      <ok-data-table .columns=${this.columns} .rows=${this.myTasks as unknown as Record<string, unknown>[]} .searchKeys=${['task_number', 'title']} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .emptyMessage=${this.myLoading ? t('ui.loading') : t('ui.emptyMine')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)}></ok-data-table>`;
+    return html`<div class="pane">
+      ${this.myError ? html`<p class="err">${this.myError}</p>` : nothing}
+      <ok-data-table .fill=${true} .columns=${this.columns} .rows=${this.myTasks as unknown as Record<string, unknown>[]} .searchKeys=${['task_number', 'title']} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .emptyMessage=${this.myLoading ? t('ui.loading') : t('ui.emptyMine')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)}></ok-data-table>
+    </div>`;
   }
 
   render() {
-    return html`<div>
+    return html`<div class="page">
         <header>
-          <h2>${t('ui.titleTasks')}</h2>
           <ion-segment .value=${this.view} @ionChange=${(e: any) => this.setView(e.detail.value)}>
             <ion-segment-button value="all"><ion-label>${t('ui.tabAll')}</ion-label></ion-segment-button>
             ${this.userRef

@@ -42,11 +42,13 @@ function t(key: string, params?: Record<string, unknown>): string {
 
 export class ErpTasksProjects extends LitElement {
   static styles = css`
-    :host { display:block; font-family: system-ui, sans-serif; color: var(--ion-text-color, #1c1b18); }
-    header { display:flex; gap:.5rem; align-items:center; margin-bottom:.75rem; }
-    h2 { margin:0; font-size:1.15rem; flex:1; }
-    .form { display:flex; gap:.75rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 1rem; }
-    .form ion-input { flex:1 1 11rem; min-width:9rem; }
+    /* Cadena de altura: sin ella, el modo fill de la tabla no tiene alto que llenar. */
+    :host { display:flex; flex-direction:column; height:100%; min-height:0; font-family: system-ui, sans-serif; color: var(--ion-text-color, #1c1b18); }
+    .page { display:flex; flex-direction:column; min-height:0; flex:1 1 auto; }
+    .page > ok-data-table { flex:1 1 auto; min-height:0; }
+    /* El alta vive en el panel lateral de la tabla: columna estrecha, no fila que se desborda. */
+    .form { display:flex; flex-direction:column; gap:.7rem; }
+    .form ion-button { align-self:flex-end; }
     .err { color:#d9480f; font-weight:600; }
   `;
 
@@ -59,8 +61,6 @@ export class ErpTasksProjects extends LitElement {
   @state() saving = false;
 
   @state() formError = '';
-
-  @state() tick = 0;
 
   private ctrl!: ListController<TaskProject>;
 
@@ -118,6 +118,13 @@ export class ErpTasksProjects extends LitElement {
     this.unsub?.();
   }
 
+  /** Referencia al panel lateral de la tabla: guardar lo cierra. */
+  private dataTable(): { open(p?: 'filters' | 'create'): void; close(): void } | null {
+    return this.renderRoot.querySelector('ok-data-table') as
+      | { open(p?: 'filters' | 'create'): void; close(): void }
+      | null;
+  }
+
   private async createProject(ev: Event) {
     ev.preventDefault();
     if (!this.newCode.trim() || !this.newName.trim()) return;
@@ -133,6 +140,7 @@ export class ErpTasksProjects extends LitElement {
       this.newCode = '';
       this.newName = '';
       this.newColor = '';
+      this.dataTable()?.close();
       await this.ctrl.load();
     } catch (e) {
       this.formError = e instanceof Error ? e.message : t('ui.errCreateProject');
@@ -142,19 +150,19 @@ export class ErpTasksProjects extends LitElement {
   }
 
   render() {
-    return html`<div>
-        <header>
-          <h2>${t('ui.titleProjects')}</h2>
-        </header>
-        <form class="form" @submit=${(e) => this.createProject(e)}>
-          <ion-input fill="outline" label-placement="floating" label=${t('ui.colCode')} placeholder=${t('ui.codePlaceholder')} .value=${this.newCode} @ionInput=${(e: any) => (this.newCode = e.target.value)}></ion-input>
-          <ion-input fill="outline" label-placement="floating" label=${t('ui.colName')} .value=${this.newName} @ionInput=${(e: any) => (this.newName = e.target.value)}></ion-input>
-          <ion-input fill="outline" label-placement="floating" label=${t('ui.colColor')} placeholder=${t('ui.colorPlaceholder')} .value=${this.newColor} @ionInput=${(e: any) => (this.newColor = e.target.value)}></ion-input>
-          <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newCode || !this.newName}>${this.saving ? t('ui.saving') : t('ui.add')}</ion-button>
-        </form>
+    return html`<div class="page">
         ${this.formError ? html`<p class="err">${this.formError}</p>` : nothing}
         ${this.ctrl?.error ? html`<p class="err">${this.ctrl.error}</p>` : nothing}
-        <ok-data-table .serverSide=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? 'desc'} .searchable=${true} .searchPlaceholder=${t('ui.searchProjectsPlaceholder')} .emptyMessage=${this.ctrl?.loading ? t('ui.loading') : t('ui.emptyProjects')} @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)} @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) => this.ctrl.setSort(e.detail.sort, e.detail.dir)} @searchChange=${(e: CustomEvent<string>) => this.ctrl.setSearch(e.detail)} @filterChange=${(e: CustomEvent<{ col: string; value: unknown }>) => this.ctrl.setFilter(e.detail.col, e.detail.value)}></ok-data-table>
+        <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? 'desc'} .searchable=${true} .searchPlaceholder=${t('ui.searchProjectsPlaceholder')} .emptyMessage=${this.ctrl?.loading ? t('ui.loading') : t('ui.emptyProjects')} @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)} @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) => this.ctrl.setSort(e.detail.sort, e.detail.dir)} @searchChange=${(e: CustomEvent<string>) => this.ctrl.setSearch(e.detail)} @filterChange=${(e: CustomEvent<{ col: string; value: unknown }>) => this.ctrl.setFilter(e.detail.col, e.detail.value)}>
+          <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
+               abriría un panel vacío (la tabla no re-renderiza a sus hijos de luz). -->
+          <form slot="create" class="form" @submit=${(e: Event) => this.createProject(e)}>
+            <ion-input fill="outline" label-placement="floating" label=${t('ui.colCode')} placeholder=${t('ui.codePlaceholder')} .value=${this.newCode} @ionInput=${(e: any) => (this.newCode = e.target.value)}></ion-input>
+            <ion-input fill="outline" label-placement="floating" label=${t('ui.colName')} .value=${this.newName} @ionInput=${(e: any) => (this.newName = e.target.value)}></ion-input>
+            <ion-input fill="outline" label-placement="floating" label=${t('ui.colColor')} placeholder=${t('ui.colorPlaceholder')} .value=${this.newColor} @ionInput=${(e: any) => (this.newColor = e.target.value)}></ion-input>
+            <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newCode || !this.newName}>${this.saving ? t('ui.saving') : t('ui.add')}</ion-button>
+          </form>
+        </ok-data-table>
       </div>`;
   }
 }
