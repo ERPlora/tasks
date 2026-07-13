@@ -90,10 +90,10 @@
             "op": "eq"
           },
           "title": {
-            "op": "eq"
+            "op": "like"
           },
           "description": {
-            "op": "eq"
+            "op": "like"
           },
           "project_id": {
             "op": "eq"
@@ -174,10 +174,10 @@
             "op": "eq"
           },
           "title": {
-            "op": "eq"
+            "op": "like"
           },
           "description": {
-            "op": "eq"
+            "op": "like"
           },
           "project_id": {
             "op": "eq"
@@ -240,7 +240,7 @@
             "op": "eq"
           },
           "comment": {
-            "op": "eq"
+            "op": "like"
           },
           "created_at": {
             "op": "range"
@@ -285,7 +285,7 @@
             "op": "eq"
           },
           "name": {
-            "op": "eq"
+            "op": "like"
           },
           "color": {
             "op": "eq"
