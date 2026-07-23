@@ -1,7 +1,9 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { state } from 'lit/decorators.js';
 import { define } from '@erplora/outfitkit/define';
+import '@erplora/outfitkit/ok-inline-feedback';
 import '@erplora/outfitkit/ok-data-table';
+import '@erplora/outfitkit/ok-empty-state';
 import type { DataTableColumn } from '@erplora/outfitkit';
 import { createListController } from '@erplora/module-sdk';
 import type { ListController, ListClient, ListParams, ListPage } from '@erplora/module-sdk';
@@ -101,7 +103,7 @@ export class ErpTasksList extends LitElement {
       flex:1 1 11rem; min-width:9rem;
     }
     .err { color:#d9480f; font-weight:600; }
-    .detail { border:1px solid var(--ion-border-color,#e7e2d6); border-radius:12px; padding:1rem; margin:0 0 1rem;
+    .detail { border:1px solid var(--ion-border-color,#e7e2d6); border-radius: var(--ok-radius, 12px); padding:1rem; margin:0 0 1rem;
       background:var(--ion-card-background,#fffdf7); }
     .detail-head { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; margin-bottom:.35rem; }
     .detail-head h3 { margin:0; font-size:1.05rem; flex:1; }
@@ -111,7 +113,7 @@ export class ErpTasksList extends LitElement {
     .desc { white-space:pre-wrap; margin:.25rem 0 .75rem; }
     .meta { display:flex; gap:1.25rem; flex-wrap:wrap; font-size:.9rem; margin-bottom:.75rem; }
     .actions-row { display:flex; gap:.75rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 .75rem; }
-    .badge { display:inline-block; padding:.1rem .55rem; border-radius:999px; font-size:.78rem;
+    .badge { display:inline-block; padding:.1rem .55rem; border-radius: var(--ok-radius-pill, 999px); font-size:.78rem;
       font-weight:600; background:var(--ok-surface-2, var(--ion-color-step-50, rgba(var(--ion-text-color-rgb, 24, 24, 27), 0.04))); }
     .badge.done { background:#d3f9d8; color:#2b8a3e; }
     .badge.cancelled { background:#ffe3e3; color:#c92a2a; }
@@ -499,7 +501,7 @@ export class ErpTasksList extends LitElement {
               @click=${() => this.assignTask(null)}>${t('ui.actionUnassign')}</ion-button>`
           : nothing}
       </div>
-      ${this.detailError ? html`<p class="err">${this.detailError}</p>` : nothing}
+      ${this.detailError ? html`<ok-inline-feedback tone="danger" icon="alert-circle-outline">${this.detailError}</ok-inline-feedback>` : nothing}
 
       <h4>${t('ui.subtasksHeading', { count: this.subtasks.length })}</h4>
       ${this.subtasks.length
@@ -510,7 +512,7 @@ export class ErpTasksList extends LitElement {
               <ion-button size="small" fill="clear" @click=${() => this.drillDown(s)}>${t('ui.actionOpen')}</ion-button>
             </div>`,
           )
-        : html`<p class="empty">${t('ui.emptySubtasks')}</p>`}
+        : html`<ok-empty-state icon="list-outline" message=${t('ui.emptySubtasks')}></ok-empty-state>`}
       <form class="comment-form" @submit=${(e: Event) => this.addSubtask(e)}>
         <ion-input fill="outline" label-placement="floating" label=${t('ui.actionAddSubtask')} placeholder=${t('ui.newSubtaskPlaceholder')} .value=${this.newSubtaskTitle}
           @ionInput=${(e: any) => (this.newSubtaskTitle = e.target.value)}></ion-input>
@@ -526,7 +528,7 @@ export class ErpTasksList extends LitElement {
               <p>${c.comment}</p>
             </div>`,
           )
-        : html`<p class="empty">${t('ui.emptyComments')}</p>`}
+        : html`<ok-empty-state icon="chatbubble-ellipses-outline" message=${t('ui.emptyComments')}></ok-empty-state>`}
       <form class="comment-form" @submit=${(e: Event) => this.addComment(e)}>
         <ion-textarea fill="outline" label-placement="floating" label=${t('ui.actionComment')} auto-grow rows="1" placeholder=${t('ui.addCommentPlaceholder')} .value=${this.newComment}
           @ionInput=${(e: any) => (this.newComment = e.target.value)}></ion-textarea>
@@ -538,8 +540,8 @@ export class ErpTasksList extends LitElement {
 
   private renderAll() {
     return html`<div class="pane">
-      ${this.formError ? html`<p class="err">${this.formError}</p>` : nothing}
-      ${this.ctrl?.error ? html`<p class="err">${this.ctrl.error}</p>` : nothing}
+      ${this.formError ? html`<ok-inline-feedback tone="danger" icon="alert-circle-outline">${this.formError}</ok-inline-feedback>` : nothing}
+      ${this.ctrl?.error ? html`<ok-inline-feedback tone="danger" icon="alert-circle-outline">${this.ctrl.error}</ok-inline-feedback>` : nothing}
       <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .columns=${this.columns} .views=${true} .cardTitle=${(r: Record<string, unknown>) => String(r.title ?? '—')} .cardIcon=${() => 'checkbox-outline'} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? 'desc'} .searchable=${true} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .emptyMessage=${this.ctrl?.loading ? t('ui.loading') : t('ui.emptyTasks')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)} @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)} @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) => this.ctrl.setSort(e.detail.sort, e.detail.dir)} @searchChange=${(e: CustomEvent<string>) => this.ctrl.setSearch(e.detail)} @filterChange=${(e: CustomEvent<{ col: string; value: unknown }>) => this.ctrl.setFilter(e.detail.col, e.detail.value)}>
         <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
              abriría un panel vacío (la tabla no re-renderiza a sus hijos de luz). -->
@@ -558,10 +560,10 @@ export class ErpTasksList extends LitElement {
 
   private renderMine() {
     if (!this.userRef) {
-      return html`<p class="empty">${t('ui.noSessionMine')}</p>`;
+      return html`<ok-empty-state icon="person-outline" message=${t('ui.noSessionMine')}></ok-empty-state>`;
     }
     return html`<div class="pane">
-      ${this.myError ? html`<p class="err">${this.myError}</p>` : nothing}
+      ${this.myError ? html`<ok-inline-feedback tone="danger" icon="alert-circle-outline">${this.myError}</ok-inline-feedback>` : nothing}
       <ok-data-table .fill=${true} .columns=${this.columns} .views=${true} .cardTitle=${(r: Record<string, unknown>) => String(r.title ?? '—')} .cardIcon=${() => 'checkbox-outline'} .rows=${this.myTasks as unknown as Record<string, unknown>[]} .searchKeys=${['task_number', 'title']} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .emptyMessage=${this.myLoading ? t('ui.loading') : t('ui.emptyMine')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)}></ok-data-table>
     </div>`;
   }
