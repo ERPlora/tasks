@@ -19,9 +19,9 @@ SELECT
     :title, :description, :project_id, 'todo', :priority,
     :assigned_to_ref, :created_by_ref, :due_date, NULL, :parent_task_id, :tags,
     0, :current_user_id, :current_user_id, :now, :now
-WHERE (:project_id IS NULL OR EXISTS (
+WHERE (CAST(:project_id AS TEXT) IS NULL OR EXISTS (
         SELECT 1 FROM tasks_project
         WHERE id = :project_id AND hub_id = :hub_id AND is_deleted = 0))
-  AND (:parent_task_id IS NULL OR EXISTS (
+  AND (CAST(:parent_task_id AS TEXT) IS NULL OR EXISTS (
         SELECT 1 FROM tasks_task
         WHERE id = :parent_task_id AND hub_id = :hub_id AND is_deleted = 0));
