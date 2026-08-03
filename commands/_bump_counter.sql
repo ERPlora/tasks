@@ -6,6 +6,6 @@ INSERT INTO tasks_counter (
 )
 VALUES (:new_id, :hub_id, :day, 1, 0, :current_user_id, :current_user_id, :now, :now)
 ON CONFLICT (hub_id, day) DO UPDATE
-SET last_number = last_number + 1,
+SET last_number = tasks_counter.last_number + 1,
     updated_by  = :current_user_id,
     updated_at  = :now;
