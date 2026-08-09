@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Creating a task with NO project and NO parent must PARSE on Postgres (tasks#1).
+"""Creating a task with NO project and NO parent must PARSE on Postgres (tasks#14).
 
 Why this file exists: `commands/_insert_task.sql` guarded its own foreign keys with the sentinel
 `(:project_id IS NULL OR EXISTS (...))`. Postgres fixes a parameter's type at its FIRST
