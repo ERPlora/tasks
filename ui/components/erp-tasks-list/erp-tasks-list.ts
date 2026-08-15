@@ -540,7 +540,7 @@ export class ErpTasksList extends LitElement {
     return html`<div class="pane">
       ${this.formError ? html`<p class="err">${this.formError}</p>` : nothing}
       ${this.ctrl?.error ? html`<p class="err">${this.ctrl.error}</p>` : nothing}
-      <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? 'desc'} .searchable=${true} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .emptyMessage=${this.ctrl?.loading ? t('ui.loading') : t('ui.emptyTasks')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)} @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)} @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) => this.ctrl.setSort(e.detail.sort, e.detail.dir)} @searchChange=${(e: CustomEvent<string>) => this.ctrl.setSearch(e.detail)} @filterChange=${(e: CustomEvent<{ col: string; value: unknown }>) => this.ctrl.setFilter(e.detail.col, e.detail.value)}>
+      <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .views=${true} .cardTitle=${(row: Record<string, unknown>) => String(row.title ?? row.task_number ?? '—')} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? 'desc'} .searchable=${true} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .emptyMessage=${this.ctrl?.loading ? t('ui.loading') : t('ui.emptyTasks')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)} @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)} @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) => this.ctrl.setSort(e.detail.sort, e.detail.dir)} @searchChange=${(e: CustomEvent<string>) => this.ctrl.setSearch(e.detail)} @filterChange=${(e: CustomEvent<{ col: string; value: unknown }>) => this.ctrl.setFilter(e.detail.col, e.detail.value)}>
         <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
              abriría un panel vacío (la tabla no re-renderiza a sus hijos de luz). -->
         <form slot="create" class="form" @submit=${(e: Event) => this.createTask(e)}>
@@ -562,7 +562,7 @@ export class ErpTasksList extends LitElement {
     }
     return html`<div class="pane">
       ${this.myError ? html`<p class="err">${this.myError}</p>` : nothing}
-      <ok-data-table .fill=${true} .columns=${this.columns} .rows=${this.myTasks as unknown as Record<string, unknown>[]} .searchKeys=${['task_number', 'title']} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .emptyMessage=${this.myLoading ? t('ui.loading') : t('ui.emptyMine')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)}></ok-data-table>
+      <ok-data-table .fill=${true} .views=${true} .cardTitle=${(row: Record<string, unknown>) => String(row.title ?? row.task_number ?? '—')} .columns=${this.columns} .rows=${this.myTasks as unknown as Record<string, unknown>[]} .searchKeys=${['task_number', 'title']} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .emptyMessage=${this.myLoading ? t('ui.loading') : t('ui.emptyMine')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)}></ok-data-table>
     </div>`;
   }
 
