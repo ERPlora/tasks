@@ -1,7 +1,7 @@
 {
   "id": "tasks",
   "name": "Tasks",
-  "version": "1.0.8",
+  "version": "1.0.11",
   "description": "Internal staff tasks and projects, with assignment, status and comments.",
   "agent": {
     "description": "Manages internal staff tasks and projects: create, assign, update status, complete tasks, add comments, and organise tasks into projects.",
@@ -413,7 +413,15 @@
     }
   },
   "events": {
-    "listen": {}
+    "listen": {},
+    "emits": [
+      "tasks.comment.added",
+      "tasks.project.created",
+      "tasks.task.assigned",
+      "tasks.task.completed",
+      "tasks.task.created",
+      "tasks.task.status_changed"
+    ]
   },
   "ai_context": "Module: Tasks (id: tasks). Internal back-office to-do for staff operations: tasks with assignees, priorities (low/medium/high/urgent), due dates, optional projects, subtasks and threaded comments. Separate from any customer-facing ticketing. Models: TaskProject, Task, TaskComment, TaskCounter. task_number is auto-generated per hub as TSK-YYYYMMDD-NNNN. Status flow: todo/in_progress/blocked/done/cancelled (done stamps completed_at). Queries: tasks.tasks.list, tasks.tasks.get, tasks.tasks.subtasks, tasks.tasks.comments, tasks.tasks.my, tasks.projects.list. Commands: tasks.tasks.create, tasks.tasks.update_status, tasks.tasks.complete, tasks.tasks.assign, tasks.tasks.add_comment, tasks.projects.create.",
   "ui": {
