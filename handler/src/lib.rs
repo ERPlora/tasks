@@ -63,19 +63,31 @@ fn as_str(v: &Value) -> String {
 
 fn str_or(p: &Value, k: &str, d: &str) -> String {
     let s = as_str(p.get(k).unwrap_or(&Value::Null));
-    if s.is_empty() { d.to_string() } else { s }
+    if s.is_empty() {
+        d.to_string()
+    } else {
+        s
+    }
 }
 
 /// String opcional: '' o ausente → NULL (refs laxas project_id/parent_task_id/…).
 fn opt_str(p: &Value, k: &str) -> Value {
     let s = as_str(p.get(k).unwrap_or(&Value::Null));
-    if s.is_empty() { Value::Null } else { Value::String(s) }
+    if s.is_empty() {
+        Value::Null
+    } else {
+        Value::String(s)
+    }
 }
 
 fn day_from_now(now: &str) -> String {
     let date = now.split('T').next().unwrap_or("");
     let digits: String = date.chars().filter(|c| c.is_ascii_digit()).collect();
-    if digits.len() >= 8 { digits[..8].to_string() } else { "00000000".to_string() }
+    if digits.len() >= 8 {
+        digits[..8].to_string()
+    } else {
+        "00000000".to_string()
+    }
 }
 
 struct Ctx {
@@ -97,7 +109,10 @@ fn split_input(input: &Value) -> (Value, Ctx) {
         .collect();
     let ctx = Ctx {
         now: context.get("now").map(as_str).unwrap_or_default(),
-        user_id: context.get("current_user_id").map(as_str).unwrap_or_default(),
+        user_id: context
+            .get("current_user_id")
+            .map(as_str)
+            .unwrap_or_default(),
         new_ids,
     };
     (payload, ctx)
@@ -141,7 +156,13 @@ fn days_in_month(y: i64, m: i64) -> i64 {
     match m {
         1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
         4 | 6 | 9 | 11 => 30,
-        2 => if is_leap(y) { 29 } else { 28 },
+        2 => {
+            if is_leap(y) {
+                29
+            } else {
+                28
+            }
+        }
         _ => 0,
     }
 }
@@ -159,7 +180,11 @@ fn parse_date(s: &str) -> Option<(i64, i64, i64)> {
     if parts.len() != 3 || parts[0].len() != 4 || parts[1].len() != 2 || parts[2].len() != 2 {
         return None;
     }
-    let (y, m, d) = (parse_int(parts[0])?, parse_int(parts[1])?, parse_int(parts[2])?);
+    let (y, m, d) = (
+        parse_int(parts[0])?,
+        parse_int(parts[1])?,
+        parse_int(parts[2])?,
+    );
     if !(1..=12).contains(&m) || d < 1 || d > days_in_month(y, m) {
         return None;
     }
@@ -175,7 +200,11 @@ fn parse_time(s: &str) -> Option<i64> {
     }
     let h = parse_int(parts[0])?;
     let mi = parse_int(parts[1])?;
-    let se = if parts.len() == 3 { parse_int(parts[2])? } else { 0 };
+    let se = if parts.len() == 3 {
+        parse_int(parts[2])?
+    } else {
+        0
+    };
     if h > 23 || mi > 59 || se > 59 {
         return None;
     }
@@ -253,7 +282,9 @@ fn normalize_due_date(raw: &Value) -> Result<Value, String> {
 pub fn create_task_pure(input: Value) -> Result<Output, String> {
     let (payload, ctx) = split_input(&input);
 
-    let title = as_str(payload.get("title").unwrap_or(&Value::Null)).trim().to_string();
+    let title = as_str(payload.get("title").unwrap_or(&Value::Null))
+        .trim()
+        .to_string();
     if title.is_empty() {
         return Err("missing_title".to_string());
     }
@@ -275,8 +306,7 @@ pub fn create_task_pure(input: Value) -> Result<Output, String> {
         .and_then(|v| v.as_array())
         .map(|a| a.iter().map(as_str).filter(|s| !s.is_empty()).collect())
         .unwrap_or_default();
-    let tags_json =
-        serde_json::to_string(&tags).map_err(|e| format!("invalid_tags: {e}"))?;
+    let tags_json = serde_json::to_string(&tags).map_err(|e| format!("invalid_tags: {e}"))?;
 
     // created_by_ref: payload explícito o el usuario actual (ref laxa a LocalUser).
     let created_by_ref = match opt_str(&payload, "created_by_ref") {
@@ -299,7 +329,10 @@ pub fn create_task_pure(input: Value) -> Result<Output, String> {
     t.insert("task_id".into(), json!(task_id));
     t.insert("day".into(), json!(day));
     t.insert("title".into(), json!(title));
-    t.insert("description".into(), json!(str_or(&payload, "description", "")));
+    t.insert(
+        "description".into(),
+        json!(str_or(&payload, "description", "")),
+    );
     t.insert("project_id".into(), project_id.clone());
     t.insert("priority".into(), json!(priority));
     t.insert("assigned_to_ref".into(), assigned_to_ref.clone());
@@ -309,19 +342,26 @@ pub fn create_task_pure(input: Value) -> Result<Output, String> {
     t.insert("tags".into(), json!(tags_json));
     ops.push(Operation::sql("tasks._insert_task", t));
 
-    let ev = Event::new("tasks.task.created", json!({
-        "sender": "tasks",
-        "task_id": task_id,
-        "title": title,
-        "status": "todo",
-        "priority": priority,
-        "project_id": project_id,
-        "parent_task_id": parent_task_id,
-        "assigned_to_ref": assigned_to_ref,
-        "due_date": due_date,
-    }));
+    let ev = Event::new(
+        "tasks.task.created",
+        json!({
+            "sender": "tasks",
+            "task_id": task_id,
+            "title": title,
+            "status": "todo",
+            "priority": priority,
+            "project_id": project_id,
+            "parent_task_id": parent_task_id,
+            "assigned_to_ref": assigned_to_ref,
+            "due_date": due_date,
+        }),
+    );
 
-    Ok(Output { operations: ops, events: vec![ev] })
+    Ok(Output {
+        operations: ops,
+        events: vec![ev],
+        ..Default::default()
+    })
 }
 
 // ── update_status (command tasks.tasks.update_status) ──────────────────────
@@ -343,16 +383,20 @@ pub fn update_status_pure(input: Value) -> Result<Output, String> {
     p.insert("task_id".into(), json!(task_id));
     p.insert("new_status".into(), json!(new_status));
 
-    let ev = Event::new("tasks.task.status_changed", json!({
-        "sender": "tasks",
-        "task_id": task_id,
-        "new_status": new_status,
-        "changed_by": if ctx.user_id.is_empty() { Value::Null } else { json!(ctx.user_id) },
-    }));
+    let ev = Event::new(
+        "tasks.task.status_changed",
+        json!({
+            "sender": "tasks",
+            "task_id": task_id,
+            "new_status": new_status,
+            "changed_by": if ctx.user_id.is_empty() { Value::Null } else { json!(ctx.user_id) },
+        }),
+    );
 
     Ok(Output {
         operations: vec![Operation::sql("tasks._set_status", p)],
         events: vec![ev],
+        ..Default::default()
     })
 }
 
@@ -370,15 +414,19 @@ pub fn complete_task_pure(input: Value) -> Result<Output, String> {
     let mut p = Map::new();
     p.insert("task_id".into(), json!(task_id));
 
-    let ev = Event::new("tasks.task.completed", json!({
-        "sender": "tasks",
-        "task_id": task_id,
-        "completed_by": if ctx.user_id.is_empty() { Value::Null } else { json!(ctx.user_id) },
-        "completed_at": ctx.now,
-    }));
+    let ev = Event::new(
+        "tasks.task.completed",
+        json!({
+            "sender": "tasks",
+            "task_id": task_id,
+            "completed_by": if ctx.user_id.is_empty() { Value::Null } else { json!(ctx.user_id) },
+            "completed_at": ctx.now,
+        }),
+    );
 
     Ok(Output {
         operations: vec![Operation::sql("tasks._complete", p)],
         events: vec![ev],
+        ..Default::default()
     })
 }
