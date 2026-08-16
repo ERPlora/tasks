@@ -1,5 +1,6 @@
 {
   "name": "Tareas",
+  "description": "Tareas y proyectos internos del equipo, con asignación, estado y comentarios.",
   "navigation": {
     "all": {
       "label": "Tareas"
