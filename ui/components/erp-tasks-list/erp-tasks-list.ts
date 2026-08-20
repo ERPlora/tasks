@@ -82,8 +82,32 @@ function currentUserRef(): string {
   }
 }
 
+/** Locale de fechas del idioma activo. Mismo criterio que `tickets` (en → en-GB, día primero). */
+function dateLocale(): string {
+  return erplora().locale === 'en' ? 'en-GB' : 'es-ES';
+}
+
+/**
+ * Vencimiento en el formato del hub (`01/09/2026` en es-ES), nunca en ISO (tasks#23).
+ *
+ * 🔴 Un vencimiento es una fecha PURA, y se formatea sin convertir de huso. La query lo devuelve
+ * como datetime completo (`2026-09-01T00:00:00+00:00`) aunque el alta acepte `YYYY-MM-DD`; pasarlo
+ * por `new Date(iso)` y formatearlo con el huso del navegador hace que las 00:00 UTC retrocedan un
+ * día al oeste de Greenwich, y el usuario ve la tarea venciendo el día ANTES del que puso. De ahí
+ * las dos guardas: se toma la parte de fecha tal cual y se formatea anclado a UTC.
+ */
 function fmtDate(iso: string | null | undefined): string {
-  return iso ? String(iso).slice(0, 10) : '—';
+  if (!iso) return '—';
+  const ymd = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso));
+  if (!ymd) return String(iso);
+  const [, year, month, day] = ymd;
+  const utc = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  return new Intl.DateTimeFormat(dateLocale(), {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(utc);
 }
 
 export class ErpTasksList extends LitElement {
@@ -194,6 +218,9 @@ export class ErpTasksList extends LitElement {
         filterable: true,
         filterType: 'select',
         options: PRIORITY_VALUES.map((value) => ({ value, label: priorityLabel(value) })),
+        // Sin `format` la celda cae al valor crudo de la fila: el filtro salía traducido y la
+        // columna, en inglés (tasks#23). La vista de tarjetas usa este mismo `format`.
+        format: (r) => priorityLabel(r.priority as string),
       },
       {
         key: 'due_date',
@@ -477,7 +504,7 @@ export class ErpTasksList extends LitElement {
       </div>
 
       <div class="actions-row">
-        <ion-select fill="outline" label=${t('ui.colStatus')} label-placement="floating" .value=${task.status}
+        <ion-select mode="md" fill="outline" label=${t('ui.colStatus')} label-placement="floating" .value=${task.status}
           ?disabled=${this.detailBusy}
           @ionChange=${(e: any) => this.changeStatus(e.target.value)}>
           ${STATUS_VALUES.map(
@@ -486,7 +513,7 @@ export class ErpTasksList extends LitElement {
         </ion-select>
         <ion-button size="small" color="success" ?disabled=${this.detailBusy || closed}
           @click=${() => this.completeTask()}>${t('ui.actionComplete')}</ion-button>
-        <ion-input fill="outline" label-placement="floating" label=${t('ui.assignToLabel')} placeholder=${t('ui.userUuidPlaceholder')} .value=${this.assignRef}
+        <ion-input mode="md" fill="outline" label-placement="floating" label=${t('ui.assignToLabel')} placeholder=${t('ui.userUuidPlaceholder')} .value=${this.assignRef}
           @ionInput=${(e: any) => (this.assignRef = e.target.value)}></ion-input>
         <ion-button size="small" ?disabled=${this.detailBusy}
           @click=${() => this.assignTask(this.assignRef)}>${t('ui.actionAssign')}</ion-button>
@@ -512,7 +539,7 @@ export class ErpTasksList extends LitElement {
           )
         : html`<p class="empty">${t('ui.emptySubtasks')}</p>`}
       <form class="comment-form" @submit=${(e: Event) => this.addSubtask(e)}>
-        <ion-input fill="outline" label-placement="floating" label=${t('ui.actionAddSubtask')} placeholder=${t('ui.newSubtaskPlaceholder')} .value=${this.newSubtaskTitle}
+        <ion-input mode="md" fill="outline" label-placement="floating" label=${t('ui.actionAddSubtask')} placeholder=${t('ui.newSubtaskPlaceholder')} .value=${this.newSubtaskTitle}
           @ionInput=${(e: any) => (this.newSubtaskTitle = e.target.value)}></ion-input>
         <ion-button type="submit" size="small" ?disabled=${this.detailBusy || !this.newSubtaskTitle}>
           ${t('ui.actionAddSubtask')}</ion-button>
@@ -528,7 +555,7 @@ export class ErpTasksList extends LitElement {
           )
         : html`<p class="empty">${t('ui.emptyComments')}</p>`}
       <form class="comment-form" @submit=${(e: Event) => this.addComment(e)}>
-        <ion-textarea fill="outline" label-placement="floating" label=${t('ui.actionComment')} auto-grow rows="1" placeholder=${t('ui.addCommentPlaceholder')} .value=${this.newComment}
+        <ion-textarea mode="md" fill="outline" label-placement="floating" label=${t('ui.actionComment')} auto-grow rows="1" placeholder=${t('ui.addCommentPlaceholder')} .value=${this.newComment}
           @ionInput=${(e: any) => (this.newComment = e.target.value)}></ion-textarea>
         <ion-button type="submit" size="small" ?disabled=${this.detailBusy || !this.newComment.trim()}>
           ${t('ui.actionComment')}</ion-button>
@@ -544,8 +571,8 @@ export class ErpTasksList extends LitElement {
         <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
              abriría un panel vacío (la tabla no re-renderiza a sus hijos de luz). -->
         <form slot="create" class="form" @submit=${(e: Event) => this.createTask(e)}>
-          <ion-input fill="outline" label-placement="floating" label=${t('ui.colTitle')} placeholder=${t('ui.newTaskPlaceholder')} .value=${this.newTitle} @ionInput=${(e: any) => (this.newTitle = e.target.value)}></ion-input>
-          <ion-select fill="outline" label-placement="floating" label=${t('ui.colPriority')} placeholder=${t('ui.priorityPlaceholder')} .value=${this.newPriority} @ionChange=${(e: any) => (this.newPriority = e.target.value)}>
+          <ion-input mode="md" fill="outline" label-placement="floating" label=${t('ui.colTitle')} placeholder=${t('ui.newTaskPlaceholder')} .value=${this.newTitle} @ionInput=${(e: any) => (this.newTitle = e.target.value)}></ion-input>
+          <ion-select mode="md" fill="outline" label-placement="floating" label=${t('ui.colPriority')} placeholder=${t('ui.priorityPlaceholder')} .value=${this.newPriority} @ionChange=${(e: any) => (this.newPriority = e.target.value)}>
             ${PRIORITY_VALUES.map(
               (k) => html`<ion-select-option .value=${k}>${priorityLabel(k)}</ion-select-option>`,
             )}
