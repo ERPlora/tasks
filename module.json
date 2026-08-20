@@ -375,6 +375,12 @@
       "emit": [
         "tasks.comment.added"
       ],
+      "expect_rows": {
+        "op": "min",
+        "n": 1,
+        "error": "tasks.task_not_found",
+        "message": "That task does not exist in this business."
+      },
       "ai": {
         "description": "Adds a comment to a task's discussion thread"
       }
