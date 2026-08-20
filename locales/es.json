@@ -81,5 +81,10 @@
     "errRunAction": "No se pudo ejecutar la acción",
     "errCreateTask": "No se pudo crear la tarea",
     "errCreateProject": "No se pudo crear el proyecto"
+  },
+  "errors": {
+    "tasks": {
+      "task_not_found": "Esa tarea no existe en este negocio."
+    }
   }
 }
