@@ -80,5 +80,10 @@
     "errRunAction": "Could not run the action",
     "errCreateTask": "Could not create the task",
     "errCreateProject": "Could not create the project"
+  },
+  "errors": {
+    "tasks": {
+      "task_not_found": "That task does not exist in this business."
+    }
   }
 }

@@ -355,6 +355,12 @@
       "emit": [
         "tasks.task.assigned"
       ],
+      "expect_rows": {
+        "op": "min",
+        "n": 1,
+        "error": "tasks.task_not_found",
+        "message": "That task does not exist in this business."
+      },
       "ai": {
         "description": "Assigns or reassigns a task to a team member"
       }
