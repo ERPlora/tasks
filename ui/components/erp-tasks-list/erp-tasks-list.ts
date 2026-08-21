@@ -63,6 +63,53 @@ function priorityLabel(priority: string): string {
   return t(`ui.priority.${priority}`);
 }
 
+// ── El color de la prioridad y del vencimiento (tasks#29) ──────────────────
+//
+// La prioridad es la columna por la que se ordena el trabajo del día, y con las cuatro etiquetas en
+// texto plano todas pesan lo mismo: hay que LEER cuatro palabras parecidas fila a fila. Odoo
+// Proyecto, Asana, Trello, Monday, Jira y las listas de tareas de Business Central hacen todos lo
+// mismo — color para la prioridad, vencimiento pasado en rojo—, así que no hay nada que inventar.
+//
+// Se pinta con `ion-badge` y con TOKENS de Ionic (`--ion-color-*`), no con hexadecimales: así el
+// chip respeta el tema claro/oscuro y su contraste AA lo garantiza la paleta. Y el color NUNCA es
+// el único portador: la etiqueta traducida sigue dentro del chip (daltonismo). `ion-badge` es
+// además lo que ya usa `invoice` para su estado — reutilizar, no crear —, y funciona dentro del
+// shadow DOM de `ok-data-table`, donde una clase CSS de este componente no llegaría.
+
+/** Escalada estándar: lo urgente es el rojo del sistema y lo bajo se retira. */
+const PRIORITY_COLOR: Record<string, string> = {
+  low: 'medium',
+  medium: 'primary',
+  high: 'warning',
+  urgent: 'danger',
+};
+
+function priorityColor(priority: string): string {
+  return PRIORITY_COLOR[priority] ?? 'medium';
+}
+
+/** Hoy en el huso del USUARIO, `YYYY-MM-DD`. Se compara texto con texto contra `due_date` (que es
+ *  una fecha pura) para no repetir el fallo de tasks#23: convertir de huso una fecha sin hora la
+ *  hace retroceder un día al oeste de Greenwich. */
+function todayIso(now: Date = new Date()): string {
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
+/** `overdue` | `today` | `none`. Una tarea CERRADA no está vencida: ya no hay nada que hacer con
+ *  ella, y teñir la lista de rojo por tareas hechas es ruido, no aviso (Asana, Jira, Todoist). */
+function dueTone(due: string | null | undefined, status: string, now?: Date): 'overdue' | 'today' | 'none' {
+  if (!due) return 'none';
+  if (status === 'done' || status === 'cancelled') return 'none';
+  const day = /^(\d{4}-\d{2}-\d{2})/.exec(String(due))?.[1];
+  if (!day) return 'none';
+  const today = todayIso(now);
+  if (day < today) return 'overdue';
+  if (day === today) return 'today';
+  return 'none';
+}
+
 function erplora(): ErploraClientLike {
   const c = (globalThis as { erplora?: ErploraClientLike }).erplora;
   if (!c) throw new Error('erplora SDK no inicializado por el shell');
@@ -108,6 +155,26 @@ function fmtDate(iso: string | null | undefined): string {
     year: 'numeric',
     timeZone: 'UTC',
   }).format(utc);
+}
+
+/** Chip de color de la prioridad. Fuera de la clase: lo usan los getters de columna, que
+ *  `ok-data-table` evalúa dentro de SU shadow DOM. */
+function renderPriority(priority: string) {
+  return html`<ion-badge color=${priorityColor(priority)}>${priorityLabel(priority)}</ion-badge>`;
+}
+
+/** Vencimiento con su matiz: rojo si ya pasó, ámbar si es hoy, normal el resto. El formato de la
+ *  fecha (`01/09/2026`) no cambia, y el aviso viaja también en texto para quien no ve el color. */
+function renderDue(due: string | null | undefined, status: string) {
+  const tone = dueTone(due, status);
+  if (tone === 'none') return html`<span>${fmtDate(due ?? null)}</span>`;
+  const color = tone === 'overdue' ? '--ion-color-danger' : '--ion-color-warning';
+  const label = tone === 'overdue' ? t('ui.overdue') : t('ui.dueToday');
+  return html`<span
+    style=${`color: var(${color}); font-weight: 600;`}
+    title=${label}
+    aria-label=${label}
+  >${fmtDate(due ?? null)}</span>`;
 }
 
 export class ErpTasksList extends LitElement {
@@ -219,8 +286,10 @@ export class ErpTasksList extends LitElement {
         filterType: 'select',
         options: PRIORITY_VALUES.map((value) => ({ value, label: priorityLabel(value) })),
         // Sin `format` la celda cae al valor crudo de la fila: el filtro salía traducido y la
-        // columna, en inglés (tasks#23). La vista de tarjetas usa este mismo `format`.
+        // columna, en inglés (tasks#23). Se conserva como texto (búsqueda, exportación) aunque
+        // `render` tenga prioridad sobre él.
         format: (r) => priorityLabel(r.priority as string),
+        render: (r) => renderPriority(r.priority as string),
       },
       {
         key: 'due_date',
@@ -229,6 +298,7 @@ export class ErpTasksList extends LitElement {
         filterable: true,
         filterType: 'daterange',
         format: (r) => fmtDate(r.due_date as string | null),
+        render: (r) => renderDue(r.due_date as string | null, r.status as string),
       },
     ];
   }
@@ -492,12 +562,12 @@ export class ErpTasksList extends LitElement {
       <div class="detail-head">
         <h3>${task.task_number} — ${task.title}</h3>
         ${this.renderBadge(task.status)}
-        <span class="badge">${priorityLabel(task.priority)}</span>
+        ${renderPriority(task.priority)}
         <ion-button size="small" fill="clear" @click=${() => this.closeDetail()}>${t('ui.close')}</ion-button>
       </div>
       ${task.description ? html`<p class="desc">${task.description}</p>` : nothing}
       <div class="meta">
-        <span><strong>${t('ui.dueLabel')}</strong> ${fmtDate(task.due_date)}</span>
+        <span><strong>${t('ui.dueLabel')}</strong> ${renderDue(task.due_date, task.status)}</span>
         <span><strong>${t('ui.completedLabel')}</strong> ${fmtDate(task.completed_at)}</span>
         <span><strong>${t('ui.assignedToLabel')}</strong> ${task.assigned_to_ref ?? '—'}</span>
         <span><strong>${t('ui.createdLabel')}</strong> ${fmtDate(task.created_at)}</span>

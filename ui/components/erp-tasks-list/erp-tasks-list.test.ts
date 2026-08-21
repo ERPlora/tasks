@@ -8,6 +8,7 @@
 //
 // El detalle de una tarea (comentarios, subtareas, asignación) NO es alta de fila de esta tabla:
 // se queda donde está, fuera del panel.
+import { render } from 'lit';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 const TAREA = {
@@ -101,10 +102,18 @@ describe('los filtros de dominio cerrado son `select`', () => {
 // vista de tarjetas (móvil) usa ESE MISMO `format`, arreglar la columna arregla los dos viewports.
 // El `t` de las pruebas devuelve la CLAVE, así que «pasó por i18n» se comprueba viendo la clave
 // (`ui.priority.high`) donde antes salía el enum crudo (`high`).
-type Col = { key: string; format?: (row: Record<string, unknown>) => string };
+type Col = {
+  key: string;
+  format?: (row: Record<string, unknown>) => string;
+  /** Render de celda a medida (tasks#29): `ok-data-table` le da prioridad sobre `format` y lo usan
+   *  igual la tabla y la vista de tarjetas, así que los dos viewports salen a la vez. */
+  render?: (row: Record<string, unknown>) => unknown;
+};
+
+const columnas = (el: HTMLElement & { shadowRoot: ShadowRoot }) => (el as unknown as { columns: Col[] }).columns;
 
 const celda = (el: HTMLElement & { shadowRoot: ShadowRoot }, key: string, row: Record<string, unknown>) => {
-  const col = ((el as unknown as { columns: Col[] }).columns).find((c) => c.key === key);
+  const col = columnas(el).find((c) => c.key === key);
   expect(col, `no existe la columna ${key}`).toBeTruthy();
   // Sin `format` la tabla pinta `row[key]` tal cual: eso es exactamente el defecto de tasks#23.
   return col!.format ? col!.format(row) : String(row[key] ?? '');
@@ -177,5 +186,111 @@ describe('el alta sigue funcionando desde el panel', () => {
     expect(alta!.payload.title).toBe('Revisar caja');
     expect(alta!.payload.priority).toBe('high');
     expect(cerrado, 'el panel de alta se queda abierto tras crear').toBe(1);
+  });
+});
+
+// ── tasks#29: la prioridad se ve, no se lee ────────────────────────────────────────────────────
+//
+// La prioridad es la columna por la que se ordena el trabajo del día, y con las cuatro etiquetas
+// en texto plano («Baja / Media / Alta / Urgente») todas pesan lo mismo: hay que LEER cuatro
+// palabras parecidas fila a fila. Todos los gestores de tareas del mercado —Odoo Proyecto, Asana,
+// Trello, Monday, Jira y las listas de tareas de Business Central— pintan la prioridad con color y
+// el vencimiento pasado en rojo. No hay nada que inventar.
+//
+// Se comprueba sobre el `render` de la columna (`ok-data-table` le da prioridad sobre `format` y lo
+// usan IGUAL la tabla y la vista de tarjetas, así que móvil y escritorio salen a la vez), y se
+// exige que el color NO sea el único portador: el texto traducido sigue ahí (daltonismo), y los
+// colores son tokens de Ionic, no hexadecimales sueltos, para que respeten claro/oscuro.
+describe('la PRIORIDAD se pinta como chip de color (tasks#29)', () => {
+  /** El HTML que la columna pinta de verdad para esa fila. */
+  const pintado = (el: HTMLElement & { shadowRoot: ShadowRoot }, key: string, row: Record<string, unknown>) => {
+    const col = columnas(el).find((c) => c.key === key);
+    expect(col?.render, `la columna «${key}» no tiene render: sigue pintando texto plano`).toBeTypeOf('function');
+    const host = document.createElement('div');
+    render(col!.render!(row) as never, host);
+    return host;
+  };
+
+  it('cada prioridad sale como chip, y las cuatro se distinguen por color', async () => {
+    const el = await montar();
+    const colores = new Map<string, string>();
+    for (const priority of ['low', 'medium', 'high', 'urgent']) {
+      const chip = pintado(el, 'priority', { ...TAREA, priority }).querySelector('ion-badge');
+      expect(chip, `la prioridad «${priority}» no se pinta como chip`).toBeTruthy();
+      const color = chip!.getAttribute('color') ?? '';
+      expect(color, `«${priority}» no lleva color`).not.toBe('');
+      colores.set(priority, color);
+    }
+    expect(new Set(colores.values()).size, `dos prioridades comparten color: ${[...colores]}`).toBe(4);
+    // Escalada: lo urgente es el rojo del sistema, lo bajo se retira. Si esto se invierte, la
+    // lista miente de un vistazo, que es justo lo que se venía a arreglar.
+    expect(colores.get('urgent')).toBe('danger');
+    expect(colores.get('high')).toBe('warning');
+    expect(colores.get('low')).toBe('medium');
+  });
+
+  it('el color NO es el único portador: el texto traducido sigue dentro del chip (daltonismo)', async () => {
+    const el = await montar();
+    for (const priority of ['low', 'medium', 'high', 'urgent']) {
+      const chip = pintado(el, 'priority', { ...TAREA, priority }).querySelector('ion-badge');
+      expect(chip!.textContent?.trim(), `«${priority}» pinta un chip mudo`).toBe(`ui.priority.${priority}`);
+    }
+  });
+
+  it('la columna conserva su `format` de texto (búsqueda, exportación, tarjetas sin render)', async () => {
+    const el = await montar();
+    expect(celda(el, 'priority', { ...TAREA, priority: 'high' })).toBe('ui.priority.high');
+  });
+});
+
+describe('el VENCIMIENTO pasado se ve en rojo (tasks#29)', () => {
+  const HOY = new Date();
+  const iso = (offsetDays: number) => {
+    const d = new Date(HOY.getFullYear(), HOY.getMonth(), HOY.getDate() + offsetDays);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+  const celdaVence = (el: HTMLElement & { shadowRoot: ShadowRoot }, row: Record<string, unknown>) => {
+    const col = columnas(el).find((c) => c.key === 'due_date');
+    expect(col?.render, 'la columna «Vence» no tiene render: no puede pintar nada en rojo').toBeTypeOf('function');
+    const host = document.createElement('div');
+    render(col!.render!(row) as never, host);
+    return host.querySelector('span') as HTMLElement;
+  };
+
+  it('un vencimiento pasado se distingue en rojo SIN romper el formato 01/09/2026', async () => {
+    const el = await montar();
+    const celdaHTML = celdaVence(el, { ...TAREA, due_date: '2020-09-01' });
+    expect(celdaHTML.textContent, 'se perdió la fecha en formato local').toContain('01/09/2020');
+    expect(celdaHTML.getAttribute('style') ?? '', 'la fecha vencida no va en el rojo del sistema')
+      .toContain('--ion-color-danger');
+  });
+
+  it('el rojo no es el único portador: la celda vencida se anuncia también con texto', async () => {
+    const el = await montar();
+    const celdaHTML = celdaVence(el, { ...TAREA, due_date: '2020-09-01' });
+    expect(celdaHTML.getAttribute('title') ?? celdaHTML.getAttribute('aria-label') ?? '').toBe('ui.overdue');
+  });
+
+  it('lo que vence HOY se matiza, pero no como vencido', async () => {
+    const el = await montar();
+    const estilo = celdaVence(el, { ...TAREA, due_date: iso(0) }).getAttribute('style') ?? '';
+    expect(estilo, 'lo de hoy se pinta como si ya estuviera vencido').not.toContain('--ion-color-danger');
+    expect(estilo, 'lo de hoy no se distingue en nada').toContain('--ion-color-warning');
+  });
+
+  it('un vencimiento futuro y una tarea sin fecha se quedan en el color normal', async () => {
+    const el = await montar();
+    expect(celdaVence(el, { ...TAREA, due_date: iso(30) }).getAttribute('style') ?? '').toBe('');
+    expect(celdaVence(el, { ...TAREA, due_date: null }).textContent).toBe('—');
+  });
+
+  // Una tarea cerrada no está «vencida»: ya no hay nada que hacer con ella y teñir la lista de rojo
+  // por tareas hechas es ruido, no aviso. Es lo que hacen Asana, Jira y Todoist.
+  it('una tarea ya HECHA o cancelada no se pinta en rojo aunque su fecha haya pasado', async () => {
+    const el = await montar();
+    for (const status of ['done', 'cancelled']) {
+      const estilo = celdaVence(el, { ...TAREA, status, due_date: '2020-09-01' }).getAttribute('style') ?? '';
+      expect(estilo, `una tarea «${status}» se sigue pintando como vencida`).not.toContain('--ion-color-danger');
+    }
   });
 });
