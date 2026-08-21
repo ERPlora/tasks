@@ -329,6 +329,15 @@
         "file": "dist/handler.wasm",
         "function": "update_status"
       },
+      "reads": [
+        {
+          "query": "tasks.tasks.get",
+          "params": {
+            "task_id": "payload.task_id"
+          },
+          "required": true
+        }
+      ],
       "ai": {
         "description": "Changes the status of a task (todo, in_progress, blocked, done, cancelled)"
       }
@@ -341,6 +350,15 @@
         "file": "dist/handler.wasm",
         "function": "complete_task"
       },
+      "reads": [
+        {
+          "query": "tasks.tasks.get",
+          "params": {
+            "task_id": "payload.task_id"
+          },
+          "required": true
+        }
+      ],
       "ai": {
         "description": "Marks a task as completed and records the completion date"
       }

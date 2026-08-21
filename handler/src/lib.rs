@@ -16,7 +16,7 @@
 //!   `_insert_task` leyendo el contador con subquery en la misma transacción
 //!   (patrón `sales`/`kitchen`; el guest nunca hace read-back).
 
-use erplora_guest_sdk::{Event, Operation, Output};
+use erplora_guest_sdk::{DomainError, Event, Operation, Output};
 use serde_json::{json, Map, Value};
 
 #[cfg(feature = "guest")]
@@ -364,10 +364,60 @@ pub fn create_task_pure(input: Value) -> Result<Output, String> {
     })
 }
 
+// ── La guarda de existencia: la lectura pre-cargada, no el WHERE del SQL ───
+//
+// tasks#22 cerró este mismo agujero en `assign`/`add_comment`, que son SQL puro: allí basta
+// `expect_rows` en el manifest. En un command Tier-2 NO sirve, y no es un olvido: el gate del
+// runtime cuenta las filas sobre las primeras `cmd.sql.len()` operaciones
+// (`crates/runtime/src/commands.rs`), y en Tier-2 ese bloque está VACÍO —la lógica va por el
+// handler— así que las intenciones que devuelve el WASM entran como `extra_ops`, que el gate no
+// cuenta. Declarar `expect_rows` aquí no protegería: contaría 0 filas SIEMPRE y rechazaría también
+// el camino feliz.
+//
+// Así que la guarda va donde sí hay contexto: en el handler, sobre la lectura que el runtime
+// pre-carga (`reads`, ADR-0069). El manifest declara
+// `{"query": "tasks.tasks.get", "params": {"task_id": "payload.task_id"}, "required": true}` y el
+// handler decide ANTES de construir el evento. Es lo mismo que hace `appointments` con la agenda:
+// una guarda que degrada cuando la lectura no llega no es una guarda.
+
+/// Filas de una lectura pre-cargada. `None` = la read no llegó (≠ llegó vacía, que es «no existe»).
+fn read_rows<'a>(input: &'a Value, query: &str) -> Option<&'a Vec<Value>> {
+    input
+        .get("context")?
+        .get("reads")?
+        .get(query)?
+        .as_array()
+}
+
+/// La tarea que el command dice tocar, tal y como la ve el SERVIDOR.
+///
+/// Tres respuestas, y las tres importan:
+/// * `Ok(row)`      — existe en ESTE hub y no está borrada (el `WHERE` de `tasks.tasks.get` ya lo
+///                    acota, y el runtime inyecta el `hub_id`: no es negociable desde el payload);
+/// * `Err(not_found)` — la read llegó VACÍA: inexistente, de otro hub o borrada. Es el caso que
+///                    hacía un UPDATE de 0 filas y emitía el evento igual;
+/// * `Err(unreadable)` — la read NO llegó. Sin ella no se sabe si la fila existe, y adivinar es
+///                    exactamente lo que esta issue viene a quitar.
+fn resolve_task(input: &Value) -> Result<&Value, DomainError> {
+    match read_rows(input, "tasks.tasks.get") {
+        None => Err(DomainError::new(
+            "tasks.task_unreadable",
+            "That task could not be read, so nothing was changed. Try again.",
+        )),
+        Some(rows) => rows.first().ok_or_else(|| {
+            DomainError::new(
+                "tasks.task_not_found",
+                "That task does not exist in this business.",
+            )
+        }),
+    }
+}
+
 // ── update_status (command tasks.tasks.update_status) ──────────────────────
 
 pub fn update_status_pure(input: Value) -> Result<Output, String> {
     let (payload, ctx) = split_input(&input);
+    let input = &input;
     let task_id = as_str(payload.get("task_id").unwrap_or(&Value::Null));
     if task_id.is_empty() {
         return Err("missing_task_id".to_string());
@@ -375,6 +425,13 @@ pub fn update_status_pure(input: Value) -> Result<Output, String> {
     let new_status = as_str(payload.get("new_status").unwrap_or(&Value::Null));
     if !STATUSES.contains(&new_status.as_str()) {
         return Err(format!("invalid_status: {new_status}"));
+    }
+
+    // La tarea tiene que existir ANTES de construir el evento (tasks#26): hasta aquí el UPDATE
+    // podía tocar 0 filas y `tasks.task.status_changed` se publicaba igual, así que quien lo
+    // escuchaba reaccionaba a un cambio que nunca ocurrió.
+    if let Err(e) = resolve_task(input) {
+        return Ok(Output::new().with_error(e));
     }
 
     // El sellado condicional de completed_at depende del estado PREVIO: lo resuelve
@@ -409,8 +466,23 @@ pub fn complete_task_pure(input: Value) -> Result<Output, String> {
         return Err("missing_task_id".to_string());
     }
 
-    // Guardas already_done / cancelled_locked en el WHERE de la intención
-    // (status NOT IN ('done','cancelled') → no-op si no se cumplen).
+    // La tarea tiene que existir y estar ABIERTA (tasks#26). El `WHERE … status NOT IN
+    // ('done','cancelled')` de la intención ya hacía no-op estos dos casos, pero un no-op sigue
+    // siendo 0 filas con `tasks.task.completed` publicado: quien lo escuchaba daba por cerrada una
+    // tarea que nadie cerró, o la cerraba dos veces. Se rechaza aquí, y con códigos distintos: «ya
+    // estaba cerrada» y «no existe» no se arreglan igual.
+    let task = match resolve_task(&input) {
+        Ok(row) => row,
+        Err(e) => return Ok(Output::new().with_error(e)),
+    };
+    let status = as_str(task.get("status").unwrap_or(&Value::Null));
+    if status == "done" || status == "cancelled" {
+        return Ok(Output::new().with_error(DomainError::new(
+            "tasks.task_already_closed",
+            "That task is already closed, so it was left as it was.",
+        )));
+    }
+
     let mut p = Map::new();
     p.insert("task_id".into(), json!(task_id));
 
@@ -429,4 +501,135 @@ pub fn complete_task_pure(input: Value) -> Result<Output, String> {
         events: vec![ev],
         ..Default::default()
     })
+}
+
+// ── Tests ──────────────────────────────────────────────────────────────────
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// El input tal y como lo arma el host: payload + contexto con las reads pre-cargadas.
+    fn input_with_read(payload: Value, rows: Option<Value>) -> Value {
+        let mut context = Map::new();
+        context.insert("now".into(), json!("2026-08-20T10:00:00Z"));
+        context.insert("current_user_id".into(), json!("u-1"));
+        context.insert("new_ids".into(), json!([]));
+        if let Some(rows) = rows {
+            context.insert("reads".into(), json!({ "tasks.tasks.get": rows }));
+        }
+        json!({ "payload": payload, "context": Value::Object(context) })
+    }
+
+    fn live_task(status: &str) -> Value {
+        json!([{ "id": "t-1", "task_number": "TSK-20260820-0001", "title": "Reponer barril",
+                 "status": status, "priority": "medium", "is_deleted": 0 }])
+    }
+
+    // ── update_status ──────────────────────────────────────────────────────
+
+    #[test]
+    fn update_status_emits_when_the_task_is_there() {
+        let out = update_status_pure(input_with_read(
+            json!({ "task_id": "t-1", "new_status": "in_progress" }),
+            Some(live_task("todo")),
+        ))
+        .expect("el camino feliz no puede fallar");
+        assert!(out.error.is_none(), "el camino feliz no rechaza");
+        assert_eq!(out.operations.len(), 1, "una intención: el UPDATE");
+        assert_eq!(out.events.len(), 1, "y su evento");
+        assert_eq!(out.events[0].name, "tasks.task.status_changed");
+    }
+
+    /// El fallo de la issue: la tarea no existe (o es de otro hub, o está borrada) y la lectura
+    /// vuelve vacía. El UPDATE afectaría 0 filas y el evento se publicaba igual.
+    #[test]
+    fn update_status_refuses_when_the_task_is_not_there() {
+        // Vacío es lo que devuelve el host cuando la query no casa ninguna fila: inexistente, de
+        // otro hub o borrada (`tasks.tasks.get` filtra por `hub_id` y por `is_deleted`, y el
+        // `hub_id` lo inyecta el runtime, no el payload).
+        let out = update_status_pure(input_with_read(
+            json!({ "task_id": "fantasma", "new_status": "done" }),
+            Some(json!([])),
+        ))
+        .expect("un rechazo de negocio es una respuesta, no un panic");
+        let err = out.error.expect("tenía que rechazar");
+        assert_eq!(err.code, "tasks.task_not_found", "código estable para el caller");
+        assert!(out.operations.is_empty(), "no se escribe nada");
+        assert!(out.events.is_empty(), "y sobre todo: NO se emite el evento");
+    }
+
+    /// Sin la read no hay forma de saber si la fila existe: se rechaza, no se adivina. Es la
+    /// misma regla que `appointments` (ADR-0069 §1): una guarda que degrada no es una guarda.
+    #[test]
+    fn update_status_refuses_when_the_read_did_not_arrive() {
+        let out = update_status_pure(input_with_read(
+            json!({ "task_id": "t-1", "new_status": "done" }),
+            None,
+        ))
+        .expect("un rechazo de negocio es una respuesta");
+        assert_eq!(out.error.expect("tenía que rechazar").code, "tasks.task_unreadable");
+        assert!(out.events.is_empty(), "NO se emite el evento a ciegas");
+    }
+
+    #[test]
+    fn update_status_still_rejects_a_status_that_does_not_exist() {
+        let err = update_status_pure(input_with_read(
+            json!({ "task_id": "t-1", "new_status": "inventado" }),
+            Some(live_task("todo")),
+        ))
+        .unwrap_err();
+        assert!(err.contains("invalid_status"), "la validación de siempre sigue: {err}");
+    }
+
+    // ── complete ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn complete_emits_when_the_task_is_open() {
+        let out = complete_task_pure(input_with_read(
+            json!({ "task_id": "t-1" }),
+            Some(live_task("in_progress")),
+        ))
+        .expect("el camino feliz no puede fallar");
+        assert!(out.error.is_none());
+        assert_eq!(out.operations.len(), 1);
+        assert_eq!(out.events.len(), 1);
+        assert_eq!(out.events[0].name, "tasks.task.completed");
+    }
+
+    #[test]
+    fn complete_refuses_when_the_task_is_not_there() {
+        let out = complete_task_pure(input_with_read(json!({ "task_id": "fantasma" }), Some(json!([]))))
+            .expect("un rechazo de negocio es una respuesta");
+        let err = out.error.expect("tenía que rechazar");
+        assert_eq!(err.code, "tasks.task_not_found");
+        assert!(out.operations.is_empty());
+        assert!(out.events.is_empty(), "NO se emite `tasks.task.completed`");
+    }
+
+    /// El `WHERE … status NOT IN ('done','cancelled')` del SQL ya hacía no-op estos dos casos: 0
+    /// filas y, aun así, evento. Ahora se rechazan antes, con un código que distingue «ya estaba
+    /// cerrada» de «no existe» — el usuario no busca lo mismo en uno y en otro.
+    #[test]
+    fn complete_refuses_a_task_that_is_already_closed() {
+        for status in ["done", "cancelled"] {
+            let out = complete_task_pure(input_with_read(
+                json!({ "task_id": "t-1" }),
+                Some(live_task(status)),
+            ))
+            .expect("un rechazo de negocio es una respuesta");
+            let err = out.error.unwrap_or_else(|| panic!("{status} tenía que rechazar"));
+            assert_eq!(err.code, "tasks.task_already_closed", "estado {status}");
+            assert!(out.operations.is_empty(), "estado {status}: no se escribe");
+            assert!(out.events.is_empty(), "estado {status}: NO se emite el evento");
+        }
+    }
+
+    #[test]
+    fn complete_refuses_when_the_read_did_not_arrive() {
+        let out = complete_task_pure(input_with_read(json!({ "task_id": "t-1" }), None))
+            .expect("un rechazo de negocio es una respuesta");
+        assert_eq!(out.error.expect("tenía que rechazar").code, "tasks.task_unreadable");
+        assert!(out.events.is_empty());
+    }
 }
