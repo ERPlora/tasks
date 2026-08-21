@@ -3180,7 +3180,9 @@ var es_default = {
     errLoadDetail: "Error cargando el detalle",
     errRunAction: "No se pudo ejecutar la acci\xF3n",
     errCreateTask: "No se pudo crear la tarea",
-    errCreateProject: "No se pudo crear el proyecto"
+    errCreateProject: "No se pudo crear el proyecto",
+    overdue: "Vencida",
+    dueToday: "Vence hoy"
   },
   errors: {
     tasks: {
@@ -3271,7 +3273,9 @@ var en_default = {
     errLoadDetail: "Error loading the detail",
     errRunAction: "Could not run the action",
     errCreateTask: "Could not create the task",
-    errCreateProject: "Could not create the project"
+    errCreateProject: "Could not create the project",
+    overdue: "Overdue",
+    dueToday: "Due today"
   },
   errors: {
     tasks: {
@@ -3292,6 +3296,30 @@ function statusLabel(status) {
 }
 function priorityLabel(priority) {
   return t5(`ui.priority.${priority}`);
+}
+var PRIORITY_COLOR = {
+  low: "medium",
+  medium: "primary",
+  high: "warning",
+  urgent: "danger"
+};
+function priorityColor(priority) {
+  return PRIORITY_COLOR[priority] ?? "medium";
+}
+function todayIso(now = /* @__PURE__ */ new Date()) {
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+function dueTone(due, status, now) {
+  if (!due) return "none";
+  if (status === "done" || status === "cancelled") return "none";
+  const day = /^(\d{4}-\d{2}-\d{2})/.exec(String(due))?.[1];
+  if (!day) return "none";
+  const today = todayIso(now);
+  if (day < today) return "overdue";
+  if (day === today) return "today";
+  return "none";
 }
 function erplora() {
   const c5 = globalThis.erplora;
@@ -3323,6 +3351,20 @@ function fmtDate(iso) {
     year: "numeric",
     timeZone: "UTC"
   }).format(utc);
+}
+function renderPriority(priority) {
+  return b2`<ion-badge color=${priorityColor(priority)}>${priorityLabel(priority)}</ion-badge>`;
+}
+function renderDue(due, status) {
+  const tone = dueTone(due, status);
+  if (tone === "none") return b2`<span>${fmtDate(due ?? null)}</span>`;
+  const color = tone === "overdue" ? "--ion-color-danger" : "--ion-color-warning";
+  const label = tone === "overdue" ? t5("ui.overdue") : t5("ui.dueToday");
+  return b2`<span
+    style=${`color: var(${color}); font-weight: 600;`}
+    title=${label}
+    aria-label=${label}
+  >${fmtDate(due ?? null)}</span>`;
 }
 var ErpTasksList = class extends i3 {
   constructor() {
@@ -3415,8 +3457,10 @@ var ErpTasksList = class extends i3 {
         filterType: "select",
         options: PRIORITY_VALUES.map((value) => ({ value, label: priorityLabel(value) })),
         // Sin `format` la celda cae al valor crudo de la fila: el filtro salía traducido y la
-        // columna, en inglés (tasks#23). La vista de tarjetas usa este mismo `format`.
-        format: (r6) => priorityLabel(r6.priority)
+        // columna, en inglés (tasks#23). Se conserva como texto (búsqueda, exportación) aunque
+        // `render` tenga prioridad sobre él.
+        format: (r6) => priorityLabel(r6.priority),
+        render: (r6) => renderPriority(r6.priority)
       },
       {
         key: "due_date",
@@ -3424,7 +3468,8 @@ var ErpTasksList = class extends i3 {
         sortable: true,
         filterable: true,
         filterType: "daterange",
-        format: (r6) => fmtDate(r6.due_date)
+        format: (r6) => fmtDate(r6.due_date),
+        render: (r6) => renderDue(r6.due_date, r6.status)
       }
     ];
   }
@@ -3651,12 +3696,12 @@ var ErpTasksList = class extends i3 {
       <div class="detail-head">
         <h3>${task.task_number} — ${task.title}</h3>
         ${this.renderBadge(task.status)}
-        <span class="badge">${priorityLabel(task.priority)}</span>
+        ${renderPriority(task.priority)}
         <ion-button size="small" fill="clear" @click=${() => this.closeDetail()}>${t5("ui.close")}</ion-button>
       </div>
       ${task.description ? b2`<p class="desc">${task.description}</p>` : A}
       <div class="meta">
-        <span><strong>${t5("ui.dueLabel")}</strong> ${fmtDate(task.due_date)}</span>
+        <span><strong>${t5("ui.dueLabel")}</strong> ${renderDue(task.due_date, task.status)}</span>
         <span><strong>${t5("ui.completedLabel")}</strong> ${fmtDate(task.completed_at)}</span>
         <span><strong>${t5("ui.assignedToLabel")}</strong> ${task.assigned_to_ref ?? "\u2014"}</span>
         <span><strong>${t5("ui.createdLabel")}</strong> ${fmtDate(task.created_at)}</span>

@@ -79,7 +79,9 @@
     "errLoadDetail": "Error loading the detail",
     "errRunAction": "Could not run the action",
     "errCreateTask": "Could not create the task",
-    "errCreateProject": "Could not create the project"
+    "errCreateProject": "Could not create the project",
+    "overdue": "Overdue",
+    "dueToday": "Due today"
   },
   "errors": {
     "tasks": {

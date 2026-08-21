@@ -80,7 +80,9 @@
     "errLoadDetail": "Error cargando el detalle",
     "errRunAction": "No se pudo ejecutar la acción",
     "errCreateTask": "No se pudo crear la tarea",
-    "errCreateProject": "No se pudo crear el proyecto"
+    "errCreateProject": "No se pudo crear el proyecto",
+    "overdue": "Vencida",
+    "dueToday": "Vence hoy"
   },
   "errors": {
     "tasks": {
