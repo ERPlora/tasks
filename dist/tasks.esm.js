@@ -1553,12 +1553,53 @@ function okIcon(value) {
 
 // ../outfitkit/dist/ok-data-table.js
 var CSV_BOM = "\uFEFF";
+var WINDOWS_1252_C1 = [
+  8364,
+  129,
+  8218,
+  402,
+  8222,
+  8230,
+  8224,
+  8225,
+  710,
+  8240,
+  352,
+  8249,
+  338,
+  141,
+  381,
+  143,
+  144,
+  8216,
+  8217,
+  8220,
+  8221,
+  8226,
+  8211,
+  8212,
+  732,
+  8482,
+  353,
+  8250,
+  339,
+  157,
+  382,
+  376
+];
+function decodeWindows1252(bytes) {
+  let text = "";
+  for (const byte of bytes) {
+    text += String.fromCharCode(byte >= 128 && byte <= 159 ? WINDOWS_1252_C1[byte - 128] : byte);
+  }
+  return text;
+}
 function decodeCsvBuffer(buf) {
   let text;
   try {
     text = new TextDecoder("utf-8", { fatal: true }).decode(buf);
   } catch {
-    text = new TextDecoder("windows-1252").decode(buf);
+    text = decodeWindows1252(new Uint8Array(buf));
   }
   return text.charCodeAt(0) === 65279 ? text.slice(1) : text;
 }
@@ -3097,7 +3138,7 @@ function createListController(client, queryName, onChange = () => {
   return new ListController(client, queryName, onChange, opts);
 }
 
-// modules/tasks/locales/es.json
+// modules/tasks/.wt-rowclick/locales/es.json
 var es_default = {
   name: "Tareas",
   description: "Tareas y proyectos internos del equipo, con asignaci\xF3n, estado y comentarios.",
@@ -3191,7 +3232,7 @@ var es_default = {
   }
 };
 
-// modules/tasks/locales/en.json
+// modules/tasks/.wt-rowclick/locales/en.json
 var en_default = {
   name: "Tasks",
   navigation: {
@@ -3284,7 +3325,7 @@ var en_default = {
   }
 };
 
-// modules/tasks/ui/components/erp-tasks-list/erp-tasks-list.ts
+// modules/tasks/.wt-rowclick/ui/components/erp-tasks-list/erp-tasks-list.ts
 var CATALOG = { es: es_default, en: en_default };
 var STATUS_VALUES = ["todo", "in_progress", "blocked", "done", "cancelled"];
 var PRIORITY_VALUES = ["low", "medium", "high", "urgent"];
@@ -3762,7 +3803,7 @@ var ErpTasksList = class extends i3 {
     return b2`<div class="pane">
       ${this.formError ? b2`<p class="err">${this.formError}</p>` : A}
       ${this.ctrl?.error ? b2`<p class="err">${this.ctrl.error}</p>` : A}
-      <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .views=${true} .cardTitle=${(row) => String(row.title ?? row.task_number ?? "\u2014")} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${t5("ui.searchTasksPlaceholder")} .actions=${this.rowActions} .emptyMessage=${this.ctrl?.loading ? t5("ui.loading") : t5("ui.emptyTasks")} @rowAction=${(e5) => this.onRowAction(e5)} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}>
+      <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .views=${true} .cardTitle=${(row) => String(row.title ?? row.task_number ?? "\u2014")} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${t5("ui.searchTasksPlaceholder")} .actions=${this.rowActions} .rowClickable=${true} .emptyMessage=${this.ctrl?.loading ? t5("ui.loading") : t5("ui.emptyTasks")} @rowAction=${(e5) => this.onRowAction(e5)} @rowClick=${(e5) => this.onRowAction({ detail: { actionId: "detail", row: e5.detail.row } })} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}>
         <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
              abriría un panel vacío (la tabla no re-renderiza a sus hijos de luz). -->
         <form slot="create" class="form" @submit=${(e5) => this.createTask(e5)}>
@@ -3783,7 +3824,7 @@ var ErpTasksList = class extends i3 {
     }
     return b2`<div class="pane">
       ${this.myError ? b2`<p class="err">${this.myError}</p>` : A}
-      <ok-data-table .fill=${true} .views=${true} .cardTitle=${(row) => String(row.title ?? row.task_number ?? "\u2014")} .columns=${this.columns} .rows=${this.myTasks} .searchKeys=${["task_number", "title"]} .searchPlaceholder=${t5("ui.searchTasksPlaceholder")} .actions=${this.rowActions} .emptyMessage=${this.myLoading ? t5("ui.loading") : t5("ui.emptyMine")} @rowAction=${(e5) => this.onRowAction(e5)}></ok-data-table>
+      <ok-data-table .fill=${true} .views=${true} .cardTitle=${(row) => String(row.title ?? row.task_number ?? "\u2014")} .columns=${this.columns} .rows=${this.myTasks} .searchKeys=${["task_number", "title"]} .searchPlaceholder=${t5("ui.searchTasksPlaceholder")} .actions=${this.rowActions} .rowClickable=${true} .emptyMessage=${this.myLoading ? t5("ui.loading") : t5("ui.emptyMine")} @rowAction=${(e5) => this.onRowAction(e5)} @rowClick=${(e5) => this.onRowAction({ detail: { actionId: "detail", row: e5.detail.row } })}></ok-data-table>
     </div>`;
   }
   render() {
@@ -3852,7 +3893,7 @@ __decorateClass([
 ], ErpTasksList.prototype, "trail", 2);
 define("erp-tasks-list", ErpTasksList);
 
-// modules/tasks/ui/components/erp-tasks-projects/erp-tasks-projects.ts
+// modules/tasks/.wt-rowclick/ui/components/erp-tasks-projects/erp-tasks-projects.ts
 var CATALOG2 = { es: es_default, en: en_default };
 function erplora2() {
   const c5 = globalThis.erplora;
