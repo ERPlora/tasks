@@ -294,3 +294,50 @@ describe('el VENCIMIENTO pasado se ve en rojo (tasks#29)', () => {
     }
   });
 });
+
+// ── pm#155 (outfitkit#67, second half) ────────────────────────────────────────────────────────
+//
+// At 1440 px the «Actions» column fell off the screen with nothing hinting the table went on to
+// the right, so the only door into a task was a button nobody could see. OutfitKit 0.1.44 pins
+// that column, but the other half of the fix is opt-in: `rowClickable` turns the whole row into a
+// door — the first thing a user tries. The list has to ask for it, and wire `rowClick` to the
+// same detail the «detail» action opens. BOTH tables (all + mine) are doors.
+describe('clicking the row opens the task (pm#155)', () => {
+  const tabla = (el: HTMLElement & { shadowRoot: ShadowRoot }, i = 0) =>
+    el.shadowRoot.querySelectorAll('ok-data-table')[i] as (HTMLElement & { rowClickable: boolean }) | undefined;
+
+  it('the «all» table declares `rowClickable` → the whole row is a door, not just the action button', async () => {
+    const el = await montar();
+    expect(
+      tabla(el)?.rowClickable,
+      'without `rowClickable` the row is dead: if the actions column is off-screen there is no way in',
+    ).toBe(true);
+  });
+
+  it('`rowClick` on the «all» table opens the detail, same as the «detail» action', async () => {
+    const sdk = (globalThis as Record<string, unknown>).erplora as Record<string, unknown>;
+    sdk.query = async (name: string) => (name === 'tasks.tasks.get' ? [TAREA] : []);
+    const el = await montar();
+    tabla(el)!.dispatchEvent(new CustomEvent('rowClick', { detail: { row: TAREA } }));
+    await new Promise((r) => setTimeout(r, 0));
+    await (el as unknown as { updateComplete: Promise<unknown> }).updateComplete;
+    expect(
+      el.shadowRoot.querySelector('section.detail'),
+      'the row was clicked and the detail did not open',
+    ).toBeTruthy();
+  });
+
+  it('the «mine» table declares `rowClickable` too (it has the same «detail» action)', async () => {
+    localStorage.setItem('erplora.session', JSON.stringify({ id: 'u1' }));
+    const el = await montar();
+    const wc = el as unknown as { setView(v: 'all' | 'mine'): void; updateComplete: Promise<unknown> };
+    wc.setView('mine');
+    await wc.updateComplete;
+    await new Promise((r) => setTimeout(r, 0));
+    await wc.updateComplete;
+    expect(
+      tabla(el)?.rowClickable,
+      'the «mine» table renders the same rows with the same dead row problem',
+    ).toBe(true);
+  });
+});
