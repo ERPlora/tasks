@@ -442,6 +442,11 @@
       ]
     }
   },
+  "errors": {
+    "tasks.task_already_closed": {},
+    "tasks.task_not_found": {},
+    "tasks.task_unreadable": {}
+  },
   "events": {
     "listen": {},
     "emits": [
