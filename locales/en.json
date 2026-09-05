@@ -84,8 +84,8 @@
     "dueToday": "Due today"
   },
   "errors": {
-    "tasks": {
-      "task_not_found": "That task does not exist in this business."
-    }
+    "tasks.task_already_closed": "That task is already closed, so it was left as it was.",
+    "tasks.task_not_found": "That task does not exist in this business.",
+    "tasks.task_unreadable": "That task could not be read, so nothing was changed. Try again."
   }
 }

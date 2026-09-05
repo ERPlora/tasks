@@ -77,10 +77,17 @@ def check_manifest_declares_the_gate() -> None:
             f"`{COMMAND}` gate code `{code}` is not namespaced to this module (the installer rejects it)"
         )
 
+    # ADR-0398 + hub#1570: the code is DECLARED in `module.json → errors`, and its sentence lives
+    # under the COMPLETE code in `locales/<lang>.json → errors` — flat, never grouped by module.
+    # The hub's SDK indexes first-level `<module>.<snake_case>` keys only (hub#1573), so a nested
+    # bucket reads as "nobody translated this" and a Spanish till keeps the server's English.
+    if code not in (MANIFEST.get("errors") or {}):
+        fail(f"module.json → errors does not declare `{code}` (ADR-0398)")
+
     for lang in ("en", "es"):
         catalog = json.loads((MODULE_DIR / "locales" / f"{lang}.json").read_text())
-        module_id, _, key = code.partition(".")
-        if key not in catalog.get("errors", {}).get(module_id, {}):
+        text = (catalog.get("errors") or {}).get(code)
+        if not isinstance(text, str) or not text.strip():
             fail(
                 f"locales/{lang}.json has no `errors.{code}` — the UI would show the raw code"
             )

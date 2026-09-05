@@ -85,8 +85,8 @@
     "dueToday": "Vence hoy"
   },
   "errors": {
-    "tasks": {
-      "task_not_found": "Esa tarea no existe en este negocio."
-    }
+    "tasks.task_already_closed": "Esa tarea ya está cerrada, así que se ha dejado como estaba.",
+    "tasks.task_not_found": "Esa tarea no existe en este negocio.",
+    "tasks.task_unreadable": "No se ha podido leer esa tarea, así que no se ha cambiado nada. Inténtalo de nuevo."
   }
 }
