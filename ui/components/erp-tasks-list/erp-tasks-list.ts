@@ -5,6 +5,7 @@ import '@erplora/outfitkit/ok-data-table';
 import type { DataTableColumn } from '@erplora/outfitkit';
 import { createListController } from '@erplora/module-sdk';
 import type { ListController, ListClient, ListParams, ListPage } from '@erplora/module-sdk';
+import { ionTone, type IonTone } from '../../lib/ion-tone';
 // Catálogo i18n del módulo (ADR-0055): esbuild inlinea estos JSON en el `dist` del WC. Los textos
 // internos se resuelven con `erplora.t(CATALOG, 'ui.clave')` (idioma activo, fallback locale→en→clave).
 import esLocale from '../../../locales/es.json';
@@ -63,28 +64,28 @@ function priorityLabel(priority: string): string {
   return t(`ui.priority.${priority}`);
 }
 
-// ── El color de la prioridad y del vencimiento (tasks#29) ──────────────────
+// ── Priority and due-date colour (tasks#29) ──────────────────────────────────
 //
-// La prioridad es la columna por la que se ordena el trabajo del día, y con las cuatro etiquetas en
-// texto plano todas pesan lo mismo: hay que LEER cuatro palabras parecidas fila a fila. Odoo
-// Proyecto, Asana, Trello, Monday, Jira y las listas de tareas de Business Central hacen todos lo
-// mismo — color para la prioridad, vencimiento pasado en rojo—, así que no hay nada que inventar.
+// Priority is the column the day's work is sorted by, and with the four labels in plain text they all
+// weigh the same: you have to READ four similar words row by row. Odoo Project, Asana, Trello, Monday,
+// Jira and Business Central's task lists all do the same — colour for priority, past due in red — so
+// there is nothing to invent.
 //
-// Se pinta con `ion-badge` y con TOKENS de Ionic (`--ion-color-*`), no con hexadecimales: así el
-// chip respeta el tema claro/oscuro y su contraste AA lo garantiza la paleta. Y el color NUNCA es
-// el único portador: la etiqueta traducida sigue dentro del chip (daltonismo). `ion-badge` es
-// además lo que ya usa `invoice` para su estado — reutilizar, no crear —, y funciona dentro del
-// shadow DOM de `ok-data-table`, donde una clase CSS de este componente no llegaría.
+// It is painted as an `ion-badge` with Ionic TOKENS (`--ion-color-*`), not hex values: the chip follows
+// the light/dark theme and the palette guarantees its AA contrast. And colour is NEVER the only carrier:
+// the translated label stays inside the chip (colour blindness). The tone goes INLINE through
+// `ionTone`, never through `color=` (pm#392): the chip lives inside `ok-data-table`'s shadow root,
+// where neither Ionic's global `.ion-color-*` rule nor a class of this component arrives.
 
-/** Escalada estándar: lo urgente es el rojo del sistema y lo bajo se retira. */
-const PRIORITY_COLOR: Record<string, string> = {
+/** Standard escalation: urgent is the system red and low steps back. */
+const PRIORITY_COLOR: Record<string, IonTone> = {
   low: 'medium',
   medium: 'primary',
   high: 'warning',
   urgent: 'danger',
 };
 
-function priorityColor(priority: string): string {
+function priorityColor(priority: string): IonTone {
   return PRIORITY_COLOR[priority] ?? 'medium';
 }
 
@@ -157,10 +158,10 @@ function fmtDate(iso: string | null | undefined): string {
   }).format(utc);
 }
 
-/** Chip de color de la prioridad. Fuera de la clase: lo usan los getters de columna, que
- *  `ok-data-table` evalúa dentro de SU shadow DOM. */
+/** Priority colour chip. Outside the class: the column getters use it, and `ok-data-table`
+ *  evaluates them inside ITS shadow DOM — hence the inline tone. */
 function renderPriority(priority: string) {
-  return html`<ion-badge color=${priorityColor(priority)}>${priorityLabel(priority)}</ion-badge>`;
+  return html`<ion-badge style=${ionTone('solid', priorityColor(priority))}>${priorityLabel(priority)}</ion-badge>`;
 }
 
 /** Vencimiento con su matiz: rojo si ya pasó, ámbar si es hoy, normal el resto. El formato de la
@@ -218,6 +219,21 @@ export class ErpTasksList extends LitElement {
       padding:.35rem 0; }
     .subtask .t { flex:1; }
     .empty { color:var(--ion-color-medium,#6f6a5e); font-size:.9rem; padding:.35rem 0; }
+    /* pm#392 — the detail buttons paint from HERE, never from \`color=\`: Ionic resolves it through a
+       GLOBAL \`.ion-color-*\` rule that does not reach inside this shadow root, so the solid
+       «Complete» came out with no fill and the outline «Unassign» fell back to primary blue. Custom
+       properties do inherit through the boundary, so the theme token still applies. */
+    ion-button.tone-success:not([fill]) {
+      --background: var(--ion-color-success, #2dd55b);
+      --background-activated: var(--ion-color-success-shade, #28bb50);
+      --background-focused: var(--ion-color-success-shade, #28bb50);
+      --background-hover: var(--ion-color-success-tint, #42d96b);
+      --color: var(--ion-color-success-contrast, #000);
+    }
+    ion-button.tone-medium[fill] {
+      --color: var(--ion-color-medium, #636469);
+      --border-color: var(--ion-color-medium, #636469);
+    }
   `;
 
   @state() view: 'all' | 'mine' = 'all';
@@ -581,7 +597,7 @@ export class ErpTasksList extends LitElement {
             (k) => html`<ion-select-option .value=${k}>${statusLabel(k)}</ion-select-option>`,
           )}
         </ion-select>
-        <ion-button size="small" color="success" ?disabled=${this.detailBusy || closed}
+        <ion-button size="small" class="tone-success" ?disabled=${this.detailBusy || closed}
           @click=${() => this.completeTask()}>${t('ui.actionComplete')}</ion-button>
         <ion-input mode="md" fill="outline" label-placement="floating" label=${t('ui.assignToLabel')} placeholder=${t('ui.userUuidPlaceholder')} .value=${this.assignRef}
           @ionInput=${(e: any) => (this.assignRef = e.target.value)}></ion-input>
@@ -592,7 +608,7 @@ export class ErpTasksList extends LitElement {
               @click=${() => this.assignTask(this.userRef)}>${t('ui.actionAssignToMe')}</ion-button>`
           : nothing}
         ${task.assigned_to_ref
-          ? html`<ion-button size="small" fill="outline" color="medium" ?disabled=${this.detailBusy}
+          ? html`<ion-button size="small" fill="outline" class="tone-medium" ?disabled=${this.detailBusy}
               @click=${() => this.assignTask(null)}>${t('ui.actionUnassign')}</ion-button>`
           : nothing}
       </div>
