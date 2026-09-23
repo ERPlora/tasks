@@ -217,7 +217,10 @@ describe('la PRIORIDAD se pinta como chip de color (tasks#29)', () => {
     for (const priority of ['low', 'medium', 'high', 'urgent']) {
       const chip = pintado(el, 'priority', { ...TAREA, priority }).querySelector('ion-badge');
       expect(chip, `la prioridad «${priority}» no se pinta como chip`).toBeTruthy();
-      const color = chip!.getAttribute('color') ?? '';
+      // pm#392: the tone travels INLINE (`--background` from the token). `color=` painted nothing
+      // here: Ionic resolves it through a global rule that never reaches the table's shadow root.
+      expect(chip!.hasAttribute('color'), `«${priority}» still delegates to color=`).toBe(false);
+      const color = /--background: var\(--ion-color-([a-z]+),/.exec(chip!.getAttribute('style') ?? '')?.[1] ?? '';
       expect(color, `«${priority}» no lleva color`).not.toBe('');
       colores.set(priority, color);
     }
