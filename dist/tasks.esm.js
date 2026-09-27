@@ -3502,6 +3502,12 @@ __decorateClass2([
 var OkDataTable = _OkDataTable;
 define("ok-data-table", OkDataTable);
 
+// @erplora/module-sdk/src/quantity.ts
+var QUANTITY_SCALE = 1e6;
+function toMicro(quantity) {
+  return Math.round(quantity * QUANTITY_SCALE);
+}
+
 // @erplora/module-sdk/src/index.ts
 function isEmpty(v3) {
   return v3 === null || v3 === void 0 || v3 === "";
@@ -3527,6 +3533,29 @@ var ListController = class {
       filters: { ...opts.filters ?? {} },
       context: { ...opts.context ?? {} }
     };
+    this.moneyFilters = new Set(opts.moneyFilters ?? []);
+    this.quantityFilters = new Set(opts.quantityFilters ?? []);
+    if (this.moneyFilters.size > 0 && typeof client.currencyDecimals !== "number") {
+      throw new ErploraError(
+        "list_money_filters_need_currency_decimals",
+        "moneyFilters needs a list client that exposes currencyDecimals"
+      );
+    }
+  }
+  /**
+   * The filters as the runtime compares them: money and quantity columns scaled from what the
+   * person typed to the stored integer. `state.filters` stays as typed, so a table that echoes it
+   * back keeps showing «12», not «1200».
+   */
+  wireFilters() {
+    if (this.moneyFilters.size === 0 && this.quantityFilters.size === 0) return this.state.filters;
+    const decimals = this.client.currencyDecimals ?? 0;
+    const out = {};
+    for (const [col, value] of Object.entries(this.state.filters)) {
+      const scale = this.moneyFilters.has(col) ? (n6) => majorToMinor(n6, decimals) : this.quantityFilters.has(col) ? toMicro : null;
+      out[col] = scale ? scaleFilterValue(value, scale) : value;
+    }
+    return out;
   }
   /** Nº de páginas según el total del servidor (mínimo 1). */
   get pageCount() {
@@ -3546,7 +3575,7 @@ var ListController = class {
         search: s5.search,
         sort: s5.sort,
         dir: s5.dir,
-        filters: s5.filters,
+        filters: this.wireFilters(),
         params: s5.context
       });
       if (mySeq !== this.seq) return;
@@ -3615,9 +3644,36 @@ var ListController = class {
     void this.load();
   }
 };
+function scaleFilterEdge(edge, scale) {
+  const text = typeof edge === "string" ? edge.trim().replace(",", ".") : edge;
+  if (text === "" || text === null || text === void 0) return "";
+  const n6 = Number(text);
+  return Number.isFinite(n6) ? scale(n6) : "";
+}
+function scaleFilterValue(value, scale) {
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([edge, v3]) => [edge, scaleFilterEdge(v3, scale)])
+    );
+  }
+  return scaleFilterEdge(value, scale);
+}
 function createListController(client, queryName, onChange = () => {
 }, opts = {}) {
   return new ListController(client, queryName, onChange, opts);
+}
+var ErploraError = class extends Error {
+  constructor(code, message, permission, fields) {
+    super(message);
+    this.code = code;
+    this.permission = permission;
+    this.fields = fields;
+    this.name = "ErploraError";
+  }
+};
+function majorToMinor(amount, decimals) {
+  const n6 = Number(amount);
+  return Number.isFinite(n6) ? Math.round(n6 * 10 ** decimals) : 0;
 }
 
 // ui/lib/ion-tone.ts
@@ -3922,6 +3978,7 @@ var ErpTasksList = class extends i3 {
     this.newPriority = "medium";
     this.saving = false;
     this.formError = "";
+    this.pageError = "";
     this.myTasks = [];
     this.myLoading = false;
     this.myError = "";
@@ -4172,6 +4229,18 @@ var ErpTasksList = class extends i3 {
       this.detailBusy = false;
     }
   }
+  /** A row action runs with no detail open: its refusal goes to the page, never to the detail error,
+   *  which is not painted then (pm#513). */
+  async runRowAction(exec) {
+    this.pageError = "";
+    try {
+      await exec();
+      await this.ctrl.load();
+      if (this.view === "mine") await this.loadMyTasks();
+    } catch (e5) {
+      this.pageError = e5 instanceof Error ? e5.message : t5("ui.errRunAction");
+    }
+  }
   /** Referencia al panel lateral de la tabla: guardar lo cierra. */
   dataTable() {
     return this.renderRoot.querySelector("ok-data-table");
@@ -4181,6 +4250,7 @@ var ErpTasksList = class extends i3 {
     if (!this.newTitle.trim()) return;
     this.saving = true;
     this.formError = "";
+    this.pageError = "";
     try {
       await erplora().command("tasks.tasks.create", {
         title: this.newTitle.trim(),
@@ -4211,10 +4281,10 @@ var ErpTasksList = class extends i3 {
         this.openDetail(task);
         break;
       case "start":
-        await this.runCommand(() => erplora().command("tasks.tasks.update_status", { task_id: task.id, new_status: "in_progress" }), false);
+        await this.runRowAction(() => erplora().command("tasks.tasks.update_status", { task_id: task.id, new_status: "in_progress" }));
         break;
       case "complete":
-        await this.runCommand(() => erplora().command("tasks.tasks.complete", { task_id: task.id }), false);
+        await this.runRowAction(() => erplora().command("tasks.tasks.complete", { task_id: task.id }));
         break;
     }
   }
@@ -4343,7 +4413,6 @@ var ErpTasksList = class extends i3 {
   }
   renderAll() {
     return b2`<div class="pane">
-      ${this.formError ? b2`<p class="err">${this.formError}</p>` : A}
       ${this.ctrl?.error ? b2`<p class="err">${this.ctrl.error}</p>` : A}
       <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .views=${true} .cardTitle=${(row) => String(row.title ?? row.task_number ?? "\u2014")} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${t5("ui.searchTasksPlaceholder")} .actions=${this.rowActions} .rowClickable=${true} .emptyMessage=${this.ctrl?.loading ? t5("ui.loading") : t5("ui.emptyTasks")} @rowAction=${(e5) => this.onRowAction(e5)} @rowClick=${(e5) => this.onRowAction({ detail: { actionId: "detail", row: e5.detail.row } })} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}>
         <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
@@ -4355,6 +4424,9 @@ var ErpTasksList = class extends i3 {
       (k2) => b2`<ion-select-option .value=${k2}>${priorityLabel(k2)}</ion-select-option>`
     )}
           </ion-select>
+          <!-- pm#513: the refusal travels WITH the form — under 834 px the panel is a full-screen
+               sheet and a line on the page underneath it is never seen. -->
+          ${this.formError ? b2`<p class="err" data-testid="tasks-list-form-error">${this.formError}</p>` : A}
           <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newTitle}>${this.saving ? t5("ui.saving") : t5("ui.add")}</ion-button>
         </form>
       </ok-data-table>
@@ -4369,6 +4441,14 @@ var ErpTasksList = class extends i3 {
       <ok-data-table .fill=${true} .views=${true} .cardTitle=${(row) => String(row.title ?? row.task_number ?? "\u2014")} .columns=${this.columns} .rows=${this.myTasks} .searchKeys=${["task_number", "title"]} .searchPlaceholder=${t5("ui.searchTasksPlaceholder")} .actions=${this.rowActions} .rowClickable=${true} .emptyMessage=${this.myLoading ? t5("ui.loading") : t5("ui.emptyMine")} @rowAction=${(e5) => this.onRowAction(e5)} @rowClick=${(e5) => this.onRowAction({ detail: { actionId: "detail", row: e5.detail.row } })}></ok-data-table>
     </div>`;
   }
+  /** pm#513: the refusal appears above the button that was pressed — on a phone that can leave it
+   *  off the sheet. Bring it into view when it appears, not again on every keystroke. */
+  updated(changed) {
+    super.updated(changed);
+    if (changed.has("formError") && this.formError) {
+      this.renderRoot.querySelector('[data-testid="tasks-list-form-error"]')?.scrollIntoView?.({ block: "center" });
+    }
+  }
   render() {
     return b2`<div class="page">
         <header>
@@ -4377,6 +4457,7 @@ var ErpTasksList = class extends i3 {
             ${this.userRef ? b2`<ion-segment-button value="mine"><ion-label>${t5("ui.tabMine")}</ion-label></ion-segment-button>` : A}
           </ion-segment>
         </header>
+        ${this.pageError ? b2`<p class="err" data-testid="tasks-list-error">${this.pageError}</p>` : A}
         ${this.renderDetail()}
         ${this.view === "all" ? this.renderAll() : this.renderMine()}
       </div>`;
@@ -4397,6 +4478,9 @@ __decorateClass([
 __decorateClass([
   r5()
 ], ErpTasksList.prototype, "formError", 2);
+__decorateClass([
+  r5()
+], ErpTasksList.prototype, "pageError", 2);
 __decorateClass([
   r5()
 ], ErpTasksList.prototype, "myTasks", 2);
@@ -4543,9 +4627,16 @@ var ErpTasksProjects = class extends i3 {
       this.saving = false;
     }
   }
+  /** pm#513: the refusal appears above the button that was pressed — on a phone that can leave it
+   *  off the sheet. Bring it into view when it appears, not again on every keystroke. */
+  updated(changed) {
+    super.updated(changed);
+    if (changed.has("formError") && this.formError) {
+      this.renderRoot.querySelector('[data-testid="tasks-projects-form-error"]')?.scrollIntoView?.({ block: "center" });
+    }
+  }
   render() {
     return b2`<div class="page">
-        ${this.formError ? b2`<p class="err">${this.formError}</p>` : A}
         ${this.ctrl?.error ? b2`<p class="err">${this.ctrl.error}</p>` : A}
         <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .views=${true} .cardTitle=${(row) => String(row.name ?? row.code ?? "\u2014")} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${t6("ui.searchProjectsPlaceholder")} .emptyMessage=${this.ctrl?.loading ? t6("ui.loading") : t6("ui.emptyProjects")} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}>
           <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
@@ -4554,6 +4645,9 @@ var ErpTasksProjects = class extends i3 {
             <ion-input mode="md" fill="outline" label-placement="floating" label=${t6("ui.colCode")} placeholder=${t6("ui.codePlaceholder")} .value=${this.newCode} @ionInput=${(e5) => this.newCode = e5.target.value}></ion-input>
             <ion-input mode="md" fill="outline" label-placement="floating" label=${t6("ui.colName")} .value=${this.newName} @ionInput=${(e5) => this.newName = e5.target.value}></ion-input>
             <ion-input mode="md" fill="outline" label-placement="floating" label=${t6("ui.colColor")} placeholder=${t6("ui.colorPlaceholder")} .value=${this.newColor} @ionInput=${(e5) => this.newColor = e5.target.value}></ion-input>
+            <!-- pm#513: the refusal travels WITH the form — under 834 px the panel is a full-screen
+                 sheet and a line on the page underneath it is never seen. -->
+            ${this.formError ? b2`<p class="err" data-testid="tasks-projects-form-error">${this.formError}</p>` : A}
             <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newCode || !this.newName}>${this.saving ? t6("ui.saving") : t6("ui.add")}</ion-button>
           </form>
         </ok-data-table>

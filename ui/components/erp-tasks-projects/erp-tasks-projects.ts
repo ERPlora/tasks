@@ -1,4 +1,5 @@
 import { LitElement, html, css, nothing } from 'lit';
+import type { PropertyValues } from 'lit';
 import { state } from 'lit/decorators.js';
 import { define } from '@erplora/outfitkit/define';
 import '@erplora/outfitkit/ok-data-table';
@@ -60,6 +61,7 @@ export class ErpTasksProjects extends LitElement {
 
   @state() saving = false;
 
+  /** What «Add» was refused: painted inside the panel's form, never on the page (pm#513). */
   @state() formError = '';
 
   private ctrl!: ListController<TaskProject>;
@@ -149,9 +151,17 @@ export class ErpTasksProjects extends LitElement {
     }
   }
 
+  /** pm#513: the refusal appears above the button that was pressed — on a phone that can leave it
+   *  off the sheet. Bring it into view when it appears, not again on every keystroke. */
+  updated(changed: PropertyValues): void {
+    super.updated(changed);
+    if (changed.has('formError') && this.formError) {
+      this.renderRoot.querySelector('[data-testid="tasks-projects-form-error"]')?.scrollIntoView?.({ block: 'center' });
+    }
+  }
+
   render() {
     return html`<div class="page">
-        ${this.formError ? html`<p class="err">${this.formError}</p>` : nothing}
         ${this.ctrl?.error ? html`<p class="err">${this.ctrl.error}</p>` : nothing}
         <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .views=${true} .cardTitle=${(row: Record<string, unknown>) => String(row.name ?? row.code ?? '—')} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? 'desc'} .searchable=${true} .searchPlaceholder=${t('ui.searchProjectsPlaceholder')} .emptyMessage=${this.ctrl?.loading ? t('ui.loading') : t('ui.emptyProjects')} @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)} @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) => this.ctrl.setSort(e.detail.sort, e.detail.dir)} @searchChange=${(e: CustomEvent<string>) => this.ctrl.setSearch(e.detail)} @filterChange=${(e: CustomEvent<{ col: string; value: unknown }>) => this.ctrl.setFilter(e.detail.col, e.detail.value)}>
           <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
@@ -160,6 +170,9 @@ export class ErpTasksProjects extends LitElement {
             <ion-input mode="md" fill="outline" label-placement="floating" label=${t('ui.colCode')} placeholder=${t('ui.codePlaceholder')} .value=${this.newCode} @ionInput=${(e: any) => (this.newCode = e.target.value)}></ion-input>
             <ion-input mode="md" fill="outline" label-placement="floating" label=${t('ui.colName')} .value=${this.newName} @ionInput=${(e: any) => (this.newName = e.target.value)}></ion-input>
             <ion-input mode="md" fill="outline" label-placement="floating" label=${t('ui.colColor')} placeholder=${t('ui.colorPlaceholder')} .value=${this.newColor} @ionInput=${(e: any) => (this.newColor = e.target.value)}></ion-input>
+            <!-- pm#513: the refusal travels WITH the form — under 834 px the panel is a full-screen
+                 sheet and a line on the page underneath it is never seen. -->
+            ${this.formError ? html`<p class="err" data-testid="tasks-projects-form-error">${this.formError}</p>` : nothing}
             <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newCode || !this.newName}>${this.saving ? t('ui.saving') : t('ui.add')}</ion-button>
           </form>
         </ok-data-table>
