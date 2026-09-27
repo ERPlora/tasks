@@ -1,4 +1,5 @@
 import { LitElement, html, css, nothing } from 'lit';
+import type { PropertyValues } from 'lit';
 import { state } from 'lit/decorators.js';
 import { define } from '@erplora/outfitkit/define';
 import '@erplora/outfitkit/ok-data-table';
@@ -253,7 +254,11 @@ export class ErpTasksList extends LitElement {
 
   @state() saving = false;
 
+  /** What «Add» was refused: painted inside the panel's form, never on the page (pm#513). */
   @state() formError = '';
+
+  /** What a row action («Start», «Complete») was refused: painted on the page, where the row is. */
+  @state() pageError = '';
 
   // ── Vista "Mis tareas" (tasks.tasks.my) ──
   @state() myTasks: Task[] = [];
@@ -494,6 +499,19 @@ export class ErpTasksList extends LitElement {
     }
   }
 
+  /** A row action runs with no detail open: its refusal goes to the page, never to the detail error,
+   *  which is not painted then (pm#513). */
+  private async runRowAction(exec: () => Promise<unknown>) {
+    this.pageError = '';
+    try {
+      await exec();
+      await this.ctrl.load();
+      if (this.view === 'mine') await this.loadMyTasks();
+    } catch (e) {
+      this.pageError = e instanceof Error ? e.message : t('ui.errRunAction');
+    }
+  }
+
   /** Referencia al panel lateral de la tabla: guardar lo cierra. */
   private dataTable(): { open(p?: 'filters' | 'create'): void; close(): void } | null {
     return this.renderRoot.querySelector('ok-data-table') as
@@ -506,6 +524,7 @@ export class ErpTasksList extends LitElement {
     if (!this.newTitle.trim()) return;
     this.saving = true;
     this.formError = '';
+    this.pageError = ''; // a save is the next thing the person did: an older row refusal is stale
     try {
       await erplora().command('tasks.tasks.create', {
         title: this.newTitle.trim(),
@@ -537,10 +556,10 @@ export class ErpTasksList extends LitElement {
         this.openDetail(task);
         break;
       case 'start':
-        await this.runCommand(() => erplora().command('tasks.tasks.update_status', { task_id: task.id, new_status: 'in_progress' }), false);
+        await this.runRowAction(() => erplora().command('tasks.tasks.update_status', { task_id: task.id, new_status: 'in_progress' }));
         break;
       case 'complete':
-        await this.runCommand(() => erplora().command('tasks.tasks.complete', { task_id: task.id }), false);
+        await this.runRowAction(() => erplora().command('tasks.tasks.complete', { task_id: task.id }));
         break;
     }
   }
@@ -688,7 +707,6 @@ export class ErpTasksList extends LitElement {
 
   private renderAll() {
     return html`<div class="pane">
-      ${this.formError ? html`<p class="err">${this.formError}</p>` : nothing}
       ${this.ctrl?.error ? html`<p class="err">${this.ctrl.error}</p>` : nothing}
       <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .views=${true} .cardTitle=${(row: Record<string, unknown>) => String(row.title ?? row.task_number ?? '—')} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? 'desc'} .searchable=${true} .searchPlaceholder=${t('ui.searchTasksPlaceholder')} .actions=${this.rowActions} .rowClickable=${true} .emptyMessage=${this.ctrl?.loading ? t('ui.loading') : t('ui.emptyTasks')} @rowAction=${(e: CustomEvent) => this.onRowAction(e)} @rowClick=${(e: CustomEvent<{ row: Record<string, unknown> }>) => this.onRowAction({ detail: { actionId: 'detail', row: e.detail.row } } as CustomEvent<{ actionId: string; row: Record<string, unknown> }>)} @pageChange=${(e: CustomEvent<number>) => this.ctrl.setPage(e.detail)} @sortChange=${(e: CustomEvent<{ sort: string; dir: 'asc' | 'desc' }>) => this.ctrl.setSort(e.detail.sort, e.detail.dir)} @searchChange=${(e: CustomEvent<string>) => this.ctrl.setSearch(e.detail)} @filterChange=${(e: CustomEvent<{ col: string; value: unknown }>) => this.ctrl.setFilter(e.detail.col, e.detail.value)}>
         <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
@@ -700,6 +718,9 @@ export class ErpTasksList extends LitElement {
               (k) => html`<ion-select-option .value=${k}>${priorityLabel(k)}</ion-select-option>`,
             )}
           </ion-select>
+          <!-- pm#513: the refusal travels WITH the form — under 834 px the panel is a full-screen
+               sheet and a line on the page underneath it is never seen. -->
+          ${this.formError ? html`<p class="err" data-testid="tasks-list-form-error">${this.formError}</p>` : nothing}
           <ion-button type="submit" size="small" ?disabled=${this.saving || !this.newTitle}>${this.saving ? t('ui.saving') : t('ui.add')}</ion-button>
         </form>
       </ok-data-table>
@@ -716,6 +737,15 @@ export class ErpTasksList extends LitElement {
     </div>`;
   }
 
+  /** pm#513: the refusal appears above the button that was pressed — on a phone that can leave it
+   *  off the sheet. Bring it into view when it appears, not again on every keystroke. */
+  updated(changed: PropertyValues): void {
+    super.updated(changed);
+    if (changed.has('formError') && this.formError) {
+      this.renderRoot.querySelector('[data-testid="tasks-list-form-error"]')?.scrollIntoView?.({ block: 'center' });
+    }
+  }
+
   render() {
     return html`<div class="page">
         <header>
@@ -726,6 +756,7 @@ export class ErpTasksList extends LitElement {
               : nothing}
           </ion-segment>
         </header>
+        ${this.pageError ? html`<p class="err" data-testid="tasks-list-error">${this.pageError}</p>` : nothing}
         ${this.renderDetail()}
         ${this.view === 'all' ? this.renderAll() : this.renderMine()}
       </div>`;
