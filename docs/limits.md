@@ -78,8 +78,9 @@ block is empty.
 
 Two consequences worth stating:
 
-- **It does not integrate with `staff`.** Assignees are text; there is no list of employees to pick
-  from and no validation that the person exists.
+- **It does not integrate with `staff`.** The assignee is picked from the hub's active people
+  (`hub.users.list`, the core), not from `staff`, and the command does not validate that the person
+  still exists.
 - **Its events are published but nobody listens.** Anything reacting to a task would have to declare
   the listener on its own side.
 

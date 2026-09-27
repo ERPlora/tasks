@@ -3,6 +3,7 @@
   "module": "tasks",
   "consumes": {
     "queries": [
+      "hub.users.list",
       "tasks.projects.list",
       "tasks.tasks.comments",
       "tasks.tasks.get",

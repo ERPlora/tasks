@@ -12,7 +12,10 @@ Newest first. Requires `tasks.view_task`.
   task or tags; and by range on the due date, the completion date or the creation date.
 
 Open a task for its full detail (`tasks.tasks.get`), its **subtasks**
-(`tasks.tasks.subtasks`) and its **comment thread** (`tasks.tasks.comments`).
+(`tasks.tasks.subtasks`) and its **comment thread** (`tasks.tasks.comments`). The assignee and the
+author of each comment are shown by the person's name, read from the hub's people
+(`hub.users.list`); someone the hub no longer lists reads as «Unknown person», an unassigned task as
+«Unassigned».
 
 ### See only your own work
 
@@ -35,7 +38,8 @@ Requires `tasks.add_task` — an employee has it.
 
 ### Assign or reassign
 
-Set the assignee. Requires `tasks.manage_task`, which an employee also has.
+Pick the person in **Assign to** (the hub's active people, by name) and press **Assign** — or press
+**Assign to me**, or **Unassign**. Requires `tasks.manage_task`, which an employee also has.
 
 ### Change the status
 

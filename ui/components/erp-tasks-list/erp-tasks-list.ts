@@ -47,6 +47,15 @@ interface TaskComment {
   created_at: string;
 }
 
+/** One row of `hub.users.list` — the hub's people (ADR-0192, the core's reserved namespace).
+ *  `assigned_to_ref` and `author_ref` are these ids; the name is presentation, resolved here
+ *  (tasks#42), the same door `tickets`, `kitchen` and `sales` use. */
+interface HubPerson {
+  id: string;
+  name: string;
+  is_active?: boolean;
+}
+
 // Valores de enum (claves): NO se traducen. Las etiquetas visibles se resuelven por i18n.
 const STATUS_VALUES = ['todo', 'in_progress', 'blocked', 'done', 'cancelled'] as const;
 const PRIORITY_VALUES = ['low', 'medium', 'high', 'urgent'] as const;
@@ -266,6 +275,9 @@ export class ErpTasksList extends LitElement {
 
   @state() assignRef = '';
 
+  /** tasks#42: id → name of the hub's people, reloaded with every detail. */
+  @state() peopleById = new Map<string, HubPerson>();
+
   @state() newComment = '';
 
   @state() newSubtaskTitle = '';
@@ -406,15 +418,36 @@ export class ErpTasksList extends LitElement {
       }
       this.detail = task;
       this.assignRef = task.assigned_to_ref ?? '';
-      const [subs, comments] = await Promise.all([
+      const [subs, comments, people] = await Promise.all([
         erplora().query<Task[]>('tasks.tasks.subtasks', { task_id: taskId }),
         erplora().query<TaskComment[]>('tasks.tasks.comments', { task_id: taskId }),
+        // tasks#42: optional on purpose. Without it (no session permission, the core down) the
+        // detail still opens and names nobody — a readable «unknown» beats a raw id.
+        erplora().query<HubPerson[]>('hub.users.list').catch(() => []),
       ]);
+      this.peopleById = new Map(
+        (Array.isArray(people) ? people : [])
+          .filter((p) => p && p.id && String(p.name ?? '').trim())
+          .map((p) => [String(p.id), { ...p, name: String(p.name).trim() }]),
+      );
       this.subtasks = subs ?? [];
       this.comments = comments ?? [];
     } catch (e) {
       this.detailError = e instanceof Error ? e.message : t('ui.errLoadDetail');
     }
+  }
+
+  /** tasks#42 · the name behind a person id. An id the hub no longer lists (or a list that could
+   *  not be loaded) reads as «unknown person»: the raw id is never painted. */
+  private personName(ref: string): string {
+    return this.peopleById.get(ref)?.name || t('ui.unknownPerson');
+  }
+
+  /** Who can be picked as the new assignee: the hub's active people, by name. */
+  private get assignablePeople(): HubPerson[] {
+    return [...this.peopleById.values()]
+      .filter((p) => p.is_active !== false)
+      .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   private openDetail(task: Task) {
@@ -585,7 +618,7 @@ export class ErpTasksList extends LitElement {
       <div class="meta">
         <span><strong>${t('ui.dueLabel')}</strong> ${renderDue(task.due_date, task.status)}</span>
         <span><strong>${t('ui.completedLabel')}</strong> ${fmtDate(task.completed_at)}</span>
-        <span><strong>${t('ui.assignedToLabel')}</strong> ${task.assigned_to_ref ?? '—'}</span>
+        <span><strong>${t('ui.assignedToLabel')}</strong> ${task.assigned_to_ref ? this.personName(task.assigned_to_ref) : t('ui.unassigned')}</span>
         <span><strong>${t('ui.createdLabel')}</strong> ${fmtDate(task.created_at)}</span>
       </div>
 
@@ -599,9 +632,13 @@ export class ErpTasksList extends LitElement {
         </ion-select>
         <ion-button size="small" class="tone-success" ?disabled=${this.detailBusy || closed}
           @click=${() => this.completeTask()}>${t('ui.actionComplete')}</ion-button>
-        <ion-input mode="md" fill="outline" label-placement="floating" label=${t('ui.assignToLabel')} placeholder=${t('ui.userUuidPlaceholder')} .value=${this.assignRef}
-          @ionInput=${(e: any) => (this.assignRef = e.target.value)}></ion-input>
-        <ion-button size="small" ?disabled=${this.detailBusy}
+        <ion-select data-testid="tasks-list-assign-ref" mode="md" fill="outline" label-placement="floating" label=${t('ui.assignToLabel')}
+          placeholder=${this.assignablePeople.length ? t('ui.pickPersonPlaceholder') : t('ui.noPeople')} .value=${this.assignRef}
+          ?disabled=${this.detailBusy || !this.assignablePeople.length}
+          @ionChange=${(e: any) => (this.assignRef = e.detail?.value ?? e.target.value ?? '')}>
+          ${this.assignablePeople.map((p) => html`<ion-select-option .value=${p.id}>${p.name}</ion-select-option>`)}
+        </ion-select>
+        <ion-button data-testid="tasks-list-assign-submit" size="small" ?disabled=${this.detailBusy || !this.assignRef.trim()}
           @click=${() => this.assignTask(this.assignRef)}>${t('ui.actionAssign')}</ion-button>
         ${this.userRef && this.userRef !== task.assigned_to_ref
           ? html`<ion-button size="small" fill="outline" ?disabled=${this.detailBusy}
@@ -635,7 +672,7 @@ export class ErpTasksList extends LitElement {
       ${this.comments.length
         ? this.comments.map(
             (c) => html`<div class="comment">
-              <div class="who">${c.author_ref ?? t('ui.anonymous')} · ${String(c.created_at).slice(0, 16).replace('T', ' ')}</div>
+              <div class="who"><span class="author">${c.author_ref ? this.personName(c.author_ref) : t('ui.anonymous')}</span> · ${String(c.created_at).slice(0, 16).replace('T', ' ')}</div>
               <p>${c.comment}</p>
             </div>`,
           )

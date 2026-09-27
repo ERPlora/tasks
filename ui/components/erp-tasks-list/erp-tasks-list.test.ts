@@ -344,3 +344,168 @@ describe('clicking the row opens the task (pm#155)', () => {
     ).toBe(true);
   });
 });
+
+// ── tasks#42 ──────────────────────────────────────────────────────────────────────────────────
+//
+// `author_ref` and `assigned_to_ref` are the ids of the hub's people (`hub_user.id`). The detail
+// painted them raw: every comment signed «3f2a… · 2026-09-26 23:44», «Assigned to: 3f2a…» and an
+// «Assign to» box asking for a uuid. The names come from `hub.users.list`, the core's reserved
+// namespace (ADR-0192) — the same door `tickets`, `kitchen` and `sales` use. An id the hub no longer
+// lists, or a list that could not be loaded, paints a readable text: never the id.
+describe('the task detail names people, never their internal id (tasks#42)', () => {
+  const ANA = 'a1b2c3d4-0000-4000-8000-000000000001';
+  const LUIS = 'a1b2c3d4-0000-4000-8000-000000000002';
+  const GONE = 'a1b2c3d4-0000-4000-8000-00000000dead';
+  const PEOPLE = [
+    { id: ANA, name: 'Ana García', role: 'admin', is_active: true },
+    { id: LUIS, name: 'Luis Pérez', role: 'employee', is_active: true },
+  ];
+
+  async function open(
+    assigned: string | null,
+    comments: Record<string, unknown>[] = [],
+    people: () => Promise<unknown> = async () => PEOPLE,
+  ) {
+    const sdk = (globalThis as Record<string, unknown>).erplora as Record<string, unknown>;
+    const task = { ...TAREA, assigned_to_ref: assigned };
+    sdk.query = async (name: string) => {
+      if (name === 'tasks.tasks.get') return [task];
+      if (name === 'tasks.tasks.comments') return comments;
+      if (name === 'hub.users.list') return people();
+      return [];
+    };
+    const el = await montar();
+    const wc = el as unknown as { openDetail: (t: unknown) => void; updateComplete: Promise<unknown> };
+    wc.openDetail(task);
+    await new Promise((r) => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
+    await wc.updateComplete;
+    comandos.length = 0;
+    return { el, wc };
+  }
+
+  const detail = (el: HTMLElement & { shadowRoot: ShadowRoot }) => el.shadowRoot.querySelector('section.detail');
+  const assignedTo = (el: HTMLElement & { shadowRoot: ShadowRoot }) =>
+    [...el.shadowRoot.querySelectorAll('.meta span')].find((s) => s.textContent?.includes('ui.assignedToLabel'))
+      ?.textContent ?? '';
+  const authors = (el: HTMLElement & { shadowRoot: ShadowRoot }) =>
+    [...el.shadowRoot.querySelectorAll('.comment .who .author')].map((s) => s.textContent?.trim());
+  const picker = (el: HTMLElement & { shadowRoot: ShadowRoot }) =>
+    el.shadowRoot.querySelector('[data-testid="tasks-list-assign-ref"]');
+  const pickerLabels = (el: HTMLElement & { shadowRoot: ShadowRoot }) =>
+    [...(picker(el)?.querySelectorAll('ion-select-option') ?? [])].map((o) => o.textContent?.trim());
+  const comment = (id: string, author_ref: string | null) => ({
+    id,
+    task_id: 't1',
+    author_ref,
+    comment: 'hola',
+    created_at: '2026-09-26T23:44:00',
+  });
+
+  it('each comment is signed by the name of its author, followed by its date', async () => {
+    const { el } = await open(null, [comment('c1', LUIS)]);
+    expect(authors(el)).toEqual(['Luis Pérez']);
+    const who = el.shadowRoot.querySelector('.comment .who')?.textContent ?? '';
+    expect(who, 'the internal id leaks into the comment signature').not.toContain(LUIS);
+    expect(who).toContain('2026-09-26 23:44');
+  });
+
+  it('an author the hub no longer lists reads as a text, not as the id; a comment without author stays anonymous', async () => {
+    const { el } = await open(null, [comment('c1', ANA), comment('c2', GONE), comment('c3', null)]);
+    expect(authors(el)).toEqual(['Ana García', 'ui.unknownPerson', 'ui.anonymous']);
+    expect(detail(el)?.textContent).not.toContain(GONE);
+  });
+
+  it('«Assigned to» shows the name of the person the task is assigned to', async () => {
+    const { el } = await open(ANA);
+    expect(assignedTo(el)).toContain('Ana García');
+    expect(assignedTo(el), 'the internal id leaks into «Assigned to»').not.toContain(ANA);
+  });
+
+  it('an assignee the hub no longer lists reads as a text, not as the id', async () => {
+    const { el } = await open(GONE);
+    expect(assignedTo(el)).toContain('ui.unknownPerson');
+    expect(assignedTo(el)).not.toContain(GONE);
+  });
+
+  it('an unassigned task says so', async () => {
+    const { el } = await open(null);
+    expect(assignedTo(el)).toContain('ui.unassigned');
+  });
+
+  it('if the people cannot be loaded the detail still opens and shows no id anywhere', async () => {
+    const { el } = await open(ANA, [comment('c1', ANA)], async () => {
+      throw new Error('forbidden');
+    });
+    expect(detail(el), 'the detail did not open').toBeTruthy();
+    expect(detail(el)?.textContent, 'an id leaked').not.toContain(ANA);
+    expect(assignedTo(el)).toContain('ui.unknownPerson');
+    expect(authors(el)).toEqual(['ui.unknownPerson']);
+  });
+
+  it('a person listed with a blank name reads as unknown, and is not offered in the picker', async () => {
+    const { el } = await open(ANA, [comment('c1', ANA)], async () => [{ id: ANA, name: '   ', is_active: true }]);
+    expect(assignedTo(el)).toContain('ui.unknownPerson');
+    expect(authors(el)).toEqual(['ui.unknownPerson']);
+    expect(pickerLabels(el)).toEqual([]);
+  });
+
+  it('«Assign to» is a picker of the hub people by name, not a box to type a uuid', async () => {
+    const { el } = await open(null);
+    const agent = picker(el);
+    expect(agent?.tagName.toLowerCase(), '«Assign to» is still a free-text box').toBe('ion-select');
+    const options = [...(agent?.querySelectorAll('ion-select-option') ?? [])].map((o) => ({
+      value: (o as unknown as { value: string }).value,
+      label: o.textContent?.trim(),
+    }));
+    expect(options).toEqual([
+      { value: ANA, label: 'Ana García' },
+      { value: LUIS, label: 'Luis Pérez' },
+    ]);
+  });
+
+  it('the picker lists the people alphabetically, whatever order the hub returns them in', async () => {
+    const { el } = await open(null, [], async () => [PEOPLE[1], PEOPLE[0]]);
+    expect(pickerLabels(el)).toEqual(['Ana García', 'Luis Pérez']);
+  });
+
+  it('a person who is no longer active is not offered as a new assignee, but the detail still names them', async () => {
+    const people = async () => [...PEOPLE, { id: GONE, name: 'Old Timer', is_active: false }];
+    const { el } = await open(null, [], people);
+    expect(pickerLabels(el)).not.toContain('Old Timer');
+    const again = await open(GONE, [comment('c1', GONE)], people);
+    expect(assignedTo(again.el)).toContain('Old Timer');
+    expect(authors(again.el)).toEqual(['Old Timer']);
+  });
+
+  it('with nobody to choose, «Assign to» says so and cannot be opened', async () => {
+    const { el } = await open(null, [], async () => []);
+    const agent = picker(el);
+    expect(agent?.hasAttribute('disabled'), 'an empty picker can still be opened').toBe(true);
+    expect(agent?.getAttribute('placeholder')).toBe('ui.noPeople');
+  });
+
+  it('with people to choose, «Assign to» invites to pick one', async () => {
+    const { el } = await open(null);
+    expect(picker(el)?.hasAttribute('disabled')).toBe(false);
+    expect(picker(el)?.getAttribute('placeholder')).toBe('ui.pickPersonPlaceholder');
+  });
+
+  it('picking a person and pressing «Assign» sends their id, not their name', async () => {
+    const { el } = await open(null);
+    const agent = picker(el) as HTMLElement & { value: string };
+    agent.value = LUIS;
+    agent.dispatchEvent(new CustomEvent('ionChange', { detail: { value: LUIS } }));
+    await (el as unknown as { updateComplete: Promise<unknown> }).updateComplete;
+    (el.shadowRoot.querySelector('[data-testid="tasks-list-assign-submit"]') as HTMLElement).click();
+    await new Promise((r) => setTimeout(r, 0));
+    const sent = comandos.filter((c) => c.name === 'tasks.tasks.assign');
+    expect(sent.map((c) => c.payload)).toEqual([{ task_id: 't1', assigned_to_ref: LUIS }]);
+  });
+
+  it('«Assign» cannot be pressed until someone is picked', async () => {
+    const { el } = await open(null);
+    const submit = el.shadowRoot.querySelector('[data-testid="tasks-list-assign-submit"]');
+    expect(submit?.hasAttribute('disabled'), '«Assign» with nobody picked would unassign by accident').toBe(true);
+  });
+});
