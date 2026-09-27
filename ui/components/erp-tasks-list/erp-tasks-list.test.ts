@@ -503,6 +503,13 @@ describe('the task detail names people, never their internal id (tasks#42)', () 
     expect(sent.map((c) => c.payload)).toEqual([{ task_id: 't1', assigned_to_ref: LUIS }]);
   });
 
+  it('an assigned task opens with its assignee already chosen in «Assign to»', async () => {
+    const { el } = await open(LUIS);
+    expect((picker(el) as unknown as { value: string }).value).toBe(LUIS);
+    const submit = el.shadowRoot.querySelector('[data-testid="tasks-list-assign-submit"]');
+    expect(submit?.hasAttribute('disabled')).toBe(false);
+  });
+
   it('«Assign» cannot be pressed until someone is picked', async () => {
     const { el } = await open(null);
     const submit = el.shadowRoot.querySelector('[data-testid="tasks-list-assign-submit"]');
