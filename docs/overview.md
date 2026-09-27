@@ -12,8 +12,9 @@ It is for **your team**, not for customers.
 
 - **It does not track customer issues.** That is `tickets`, the helpdesk, which has SLAs and a
   customer on it.
-- **It does not link to staff records or user accounts.** Assignee, creator, owner and comment author
-  are loose text references with no foreign key.
+- **It does not own user accounts.** Assignee, creator, owner and comment author are references to
+  the hub's people with no foreign key; the screen names them through the core's `hub.users.list`
+  and never paints the raw id.
 - **It does not notify anybody.** No email, no push, no reminder — not on assignment, not when a task
   is overdue.
 - **It does not track time**, estimate effort or report on velocity.

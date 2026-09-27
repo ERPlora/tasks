@@ -3706,7 +3706,10 @@ var es_default = {
     priorityPlaceholder: "Prioridad\u2026",
     newSubtaskPlaceholder: "Nueva subtarea\u2026",
     addCommentPlaceholder: "A\xF1adir comentario\u2026",
-    userUuidPlaceholder: "uuid del usuario\u2026",
+    unassigned: "Sin asignar",
+    unknownPerson: "Persona desconocida",
+    pickPersonPlaceholder: "Elige una persona",
+    noPeople: "No hay personas para elegir",
     searchTasksPlaceholder: "Buscar n\xBA o t\xEDtulo\u2026",
     searchProjectsPlaceholder: "Buscar c\xF3digo o nombre\u2026",
     codePlaceholder: "C\xF3digo (q3-audit)",
@@ -3799,7 +3802,10 @@ var en_default = {
     priorityPlaceholder: "Priority\u2026",
     newSubtaskPlaceholder: "New subtask\u2026",
     addCommentPlaceholder: "Add comment\u2026",
-    userUuidPlaceholder: "user uuid\u2026",
+    unassigned: "Unassigned",
+    unknownPerson: "Unknown person",
+    pickPersonPlaceholder: "Choose a person",
+    noPeople: "No people to choose from",
     searchTasksPlaceholder: "Search no. or title\u2026",
     searchProjectsPlaceholder: "Search code or name\u2026",
     codePlaceholder: "Code (q3-audit)",
@@ -3925,6 +3931,7 @@ var ErpTasksList = class extends i3 {
     this.subtasks = [];
     this.comments = [];
     this.assignRef = "";
+    this.peopleById = /* @__PURE__ */ new Map();
     this.newComment = "";
     this.newSubtaskTitle = "";
     this.trail = [];
@@ -4102,15 +4109,30 @@ var ErpTasksList = class extends i3 {
       }
       this.detail = task;
       this.assignRef = task.assigned_to_ref ?? "";
-      const [subs, comments] = await Promise.all([
+      const [subs, comments, people] = await Promise.all([
         erplora().query("tasks.tasks.subtasks", { task_id: taskId }),
-        erplora().query("tasks.tasks.comments", { task_id: taskId })
+        erplora().query("tasks.tasks.comments", { task_id: taskId }),
+        // tasks#42: optional on purpose. Without it (no session permission, the core down) the
+        // detail still opens and names nobody — a readable «unknown» beats a raw id.
+        erplora().query("hub.users.list").catch(() => [])
       ]);
+      this.peopleById = new Map(
+        (Array.isArray(people) ? people : []).filter((p4) => p4 && p4.id && String(p4.name ?? "").trim()).map((p4) => [String(p4.id), { ...p4, name: String(p4.name).trim() }])
+      );
       this.subtasks = subs ?? [];
       this.comments = comments ?? [];
     } catch (e5) {
       this.detailError = e5 instanceof Error ? e5.message : t5("ui.errLoadDetail");
     }
+  }
+  /** tasks#42 · the name behind a person id. An id the hub no longer lists (or a list that could
+   *  not be loaded) reads as «unknown person»: the raw id is never painted. */
+  personName(ref) {
+    return this.peopleById.get(ref)?.name || t5("ui.unknownPerson");
+  }
+  /** Who can be picked as the new assignee: the hub's active people, by name. */
+  get assignablePeople() {
+    return [...this.peopleById.values()].filter((p4) => p4.is_active !== false).sort((a3, b3) => a3.name.localeCompare(b3.name));
   }
   openDetail(task) {
     this.trail = [];
@@ -4260,7 +4282,7 @@ var ErpTasksList = class extends i3 {
       <div class="meta">
         <span><strong>${t5("ui.dueLabel")}</strong> ${renderDue(task.due_date, task.status)}</span>
         <span><strong>${t5("ui.completedLabel")}</strong> ${fmtDate(task.completed_at)}</span>
-        <span><strong>${t5("ui.assignedToLabel")}</strong> ${task.assigned_to_ref ?? "\u2014"}</span>
+        <span><strong>${t5("ui.assignedToLabel")}</strong> ${task.assigned_to_ref ? this.personName(task.assigned_to_ref) : t5("ui.unassigned")}</span>
         <span><strong>${t5("ui.createdLabel")}</strong> ${fmtDate(task.created_at)}</span>
       </div>
 
@@ -4274,9 +4296,13 @@ var ErpTasksList = class extends i3 {
         </ion-select>
         <ion-button size="small" class="tone-success" ?disabled=${this.detailBusy || closed}
           @click=${() => this.completeTask()}>${t5("ui.actionComplete")}</ion-button>
-        <ion-input mode="md" fill="outline" label-placement="floating" label=${t5("ui.assignToLabel")} placeholder=${t5("ui.userUuidPlaceholder")} .value=${this.assignRef}
-          @ionInput=${(e5) => this.assignRef = e5.target.value}></ion-input>
-        <ion-button size="small" ?disabled=${this.detailBusy}
+        <ion-select data-testid="tasks-list-assign-ref" mode="md" fill="outline" label-placement="floating" label=${t5("ui.assignToLabel")}
+          placeholder=${this.assignablePeople.length ? t5("ui.pickPersonPlaceholder") : t5("ui.noPeople")} .value=${this.assignRef}
+          ?disabled=${this.detailBusy || !this.assignablePeople.length}
+          @ionChange=${(e5) => this.assignRef = e5.detail?.value ?? e5.target.value ?? ""}>
+          ${this.assignablePeople.map((p4) => b2`<ion-select-option .value=${p4.id}>${p4.name}</ion-select-option>`)}
+        </ion-select>
+        <ion-button data-testid="tasks-list-assign-submit" size="small" ?disabled=${this.detailBusy || !this.assignRef.trim()}
           @click=${() => this.assignTask(this.assignRef)}>${t5("ui.actionAssign")}</ion-button>
         ${this.userRef && this.userRef !== task.assigned_to_ref ? b2`<ion-button size="small" fill="outline" ?disabled=${this.detailBusy}
               @click=${() => this.assignTask(this.userRef)}>${t5("ui.actionAssignToMe")}</ion-button>` : A}
@@ -4303,7 +4329,7 @@ var ErpTasksList = class extends i3 {
       <h4>${t5("ui.commentsHeading", { count: this.comments.length })}</h4>
       ${this.comments.length ? this.comments.map(
       (c5) => b2`<div class="comment">
-              <div class="who">${c5.author_ref ?? t5("ui.anonymous")} · ${String(c5.created_at).slice(0, 16).replace("T", " ")}</div>
+              <div class="who"><span class="author">${c5.author_ref ? this.personName(c5.author_ref) : t5("ui.anonymous")}</span> · ${String(c5.created_at).slice(0, 16).replace("T", " ")}</div>
               <p>${c5.comment}</p>
             </div>`
     ) : b2`<p class="empty">${t5("ui.emptyComments")}</p>`}
@@ -4398,6 +4424,9 @@ __decorateClass([
 __decorateClass([
   r5()
 ], ErpTasksList.prototype, "assignRef", 2);
+__decorateClass([
+  r5()
+], ErpTasksList.prototype, "peopleById", 2);
 __decorateClass([
   r5()
 ], ErpTasksList.prototype, "newComment", 2);

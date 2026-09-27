@@ -64,8 +64,10 @@ Worth knowing before you clean up.
 Assignee, creator, project owner and comment author are all stored as plain references **without a
 foreign key** to any user or staff module.
 
-So renaming or deactivating a person elsewhere does not update old tasks, you cannot navigate from a
-task to a staff record, and "my tasks" is a match on that reference, not on a logged-in identity.
+So you cannot navigate from a task to a staff record, and "my tasks" is a match on that reference, not
+on a logged-in identity. The references are the ids of the hub's people: the task detail reads their
+names from the core's `hub.users.list` when it opens, so a renamed person shows their current name,
+and someone the hub no longer lists reads as «Unknown person» — the raw id is never painted.
 
 ## Due dates are normalised to UTC
 
