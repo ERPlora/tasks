@@ -219,6 +219,22 @@ describe('pm#513 · tasks: what goes wrong OUTSIDE the save stays on the page', 
     expect(onPage(el, 'tasks-list-error')?.textContent?.trim()).toBe(REFUSAL);
   });
 
+  it('a row action that goes through refreshes the list, and «My tasks» when that is the view', async () => {
+    localStorage.setItem('erplora.session', JSON.stringify({ id: 'u1' }));
+    const el = await mount('erp-tasks-list');
+    el.setView('mine');
+    await settle(el);
+    const api = (globalThis as Record<string, any>).erplora;
+    const reads: string[] = [];
+    const { query, queryPage } = api;
+    api.query = (name: string, ...rest: unknown[]) => (reads.push(name), query(name, ...rest));
+    api.queryPage = (name: string, ...rest: unknown[]) => (reads.push(`page:${name}`), queryPage(name, ...rest));
+    await rowAction(el, 'complete');
+    await settle(el);
+    expect(reads.some((r) => r.startsWith('page:')), 'the completed row has to leave «to do» in the table').toBe(true);
+    expect(reads, 'and in «My tasks» too').toContain('tasks.tasks.my');
+  });
+
   it('a new row action clears the previous refusal while it runs', async () => {
     const el = await mount('erp-tasks-list');
     refuse = REFUSAL;
