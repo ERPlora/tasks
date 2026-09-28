@@ -86,9 +86,21 @@
     "overdue": "Overdue",
     "dueToday": "Due today",
     "taskCompleted": "Task completed",
-    "taskStarted": "Task started"
+    "taskStarted": "Task started",
+    "save": "Save",
+    "actionActivate": "Activate",
+    "actionDeactivate": "Deactivate",
+    "actionAddTask": "Add task",
+    "projectActive": "Active",
+    "projectInactive": "Inactive",
+    "projectTasksHeading": "Tasks in this project ({count})",
+    "projectTasksMore": "Showing {shown} of {total}. Find the rest in Tasks.",
+    "emptyProjectTasks": "No tasks in this project yet.",
+    "errLoadProjectTasks": "Could not load this project's tasks",
+    "errUpdateProject": "Could not save the project"
   },
   "errors": {
+    "tasks.project_not_found": "That project does not exist in this business.",
     "tasks.task_already_closed": "That task is already closed, so it was left as it was.",
     "tasks.task_not_found": "That task does not exist in this business.",
     "tasks.task_unreadable": "That task could not be read, so nothing was changed. Try again."

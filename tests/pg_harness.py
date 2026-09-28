@@ -184,3 +184,23 @@ def seed_task(
         f"{literal(task_id)}, {literal(hub)}, {literal(number)}, 'Fixture', "
         f"{literal(assigned_to)}, {deleted}, {literal(NOW)});"
     )
+
+
+def seed_project(
+    db: ScratchDb,
+    project_id: str,
+    *,
+    hub: str = HUB,
+    code: str = "P-1",
+    name: str = "Fixture project",
+    color: str = "",
+    active: int = 1,
+    deleted: int = 0,
+) -> None:
+    """One project row, straight in — the fixture, not the thing under test."""
+    db.exec_script(
+        "INSERT INTO tasks_project (id, hub_id, code, name, color, is_active, is_deleted, "
+        "created_at) VALUES ("
+        f"{literal(project_id)}, {literal(hub)}, {literal(code)}, {literal(name)}, "
+        f"{literal(color)}, {active}, {deleted}, {literal(NOW)});"
+    )

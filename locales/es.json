@@ -87,9 +87,21 @@
     "overdue": "Vencida",
     "dueToday": "Vence hoy",
     "taskCompleted": "Tarea completada",
-    "taskStarted": "Tarea iniciada"
+    "taskStarted": "Tarea iniciada",
+    "save": "Guardar",
+    "actionActivate": "Activar",
+    "actionDeactivate": "Desactivar",
+    "actionAddTask": "Añadir tarea",
+    "projectActive": "Activo",
+    "projectInactive": "Inactivo",
+    "projectTasksHeading": "Tareas de este proyecto ({count})",
+    "projectTasksMore": "Se muestran {shown} de {total}. El resto, en Tareas.",
+    "emptyProjectTasks": "Este proyecto aún no tiene tareas.",
+    "errLoadProjectTasks": "No se han podido cargar las tareas de este proyecto",
+    "errUpdateProject": "No se ha podido guardar el proyecto"
   },
   "errors": {
+    "tasks.project_not_found": "Ese proyecto no existe en este negocio.",
     "tasks.task_already_closed": "Esa tarea ya está cerrada, así que se ha dejado como estaba.",
     "tasks.task_not_found": "Esa tarea no existe en este negocio.",
     "tasks.task_unreadable": "No se ha podido leer esa tarea, así que no se ha cambiado nada. Inténtalo de nuevo."
