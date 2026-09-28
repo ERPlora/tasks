@@ -21,6 +21,8 @@ interface ErploraClientLike extends ListClient {
   /** i18n del módulo (ADR-0055): idioma activo + traducción del catálogo `ui`. */
   locale: string;
   t(catalog: Record<string, unknown>, key: string, params?: Record<string, unknown>): string;
+  /** The shell's toast. Optional: a preview without the SDK has none. */
+  notify?(n: { type: 'success' | 'error' | 'info' | 'warning'; message: string }): void;
 }
 
 interface Task {
@@ -119,6 +121,32 @@ function dueTone(due: string | null | undefined, status: string, now?: Date): 'o
   if (day < today) return 'overdue';
   if (day === today) return 'today';
   return 'none';
+}
+
+/**
+ * tasks#45 · «My tasks» only lists OPEN tasks, so the one just completed vanished on the reload and
+ * the next card slid into its slot. It stays where it was, shown as done, until the person leaves the
+ * tab (Things, Apple Reminders, Asana): the fresh rows keep the server's order and each kept task goes
+ * back right after the card that preceded it. A kept task the server lists again (reopened) is
+ * painted from the server, once.
+ */
+export function keepCompletedInPlace<T extends { id: string }>(previous: T[], fresh: T[], kept: Map<string, T>): T[] {
+  const result = [...fresh];
+  const has = (id: string): boolean => result.some((r) => r.id === id);
+  previous.forEach((row, i) => {
+    const done = kept.get(row.id);
+    if (!done || has(row.id)) return;
+    let at = 0;
+    for (let j = i - 1; j >= 0; j--) {
+      const k = result.findIndex((r) => r.id === previous[j].id);
+      if (k >= 0) {
+        at = k + 1;
+        break;
+      }
+    }
+    result.splice(at, 0, done);
+  });
+  return result;
 }
 
 function erplora(): ErploraClientLike {
@@ -267,6 +295,9 @@ export class ErpTasksList extends LitElement {
 
   @state() myError = '';
 
+  /** tasks#45: tasks completed from «My tasks» during this visit to the tab, kept in their slot. */
+  private keptDone = new Map<string, Task>();
+
   // ── Detalle (tasks.tasks.get + subtasks + comments) ──
   @state() detail: Task | null = null;
 
@@ -396,7 +427,7 @@ export class ErpTasksList extends LitElement {
         apply_horizon: 0,
         due_horizon: null,
       });
-      this.myTasks = rows ?? [];
+      this.myTasks = keepCompletedInPlace(this.myTasks, rows ?? [], this.keptDone);
     } catch (e) {
       this.myError = e instanceof Error ? e.message : t('ui.errLoadMine');
     } finally {
@@ -406,6 +437,8 @@ export class ErpTasksList extends LitElement {
 
   private setView(view: 'all' | 'mine') {
     this.view = view;
+    // Leaving the tab (or coming back to it) is when the completed ones are let go.
+    this.keptDone = new Map();
     if (view === 'mine') void this.loadMyTasks();
   }
 
@@ -501,10 +534,13 @@ export class ErpTasksList extends LitElement {
 
   /** A row action runs with no detail open: its refusal goes to the page, never to the detail error,
    *  which is not painted then (pm#513). */
-  private async runRowAction(exec: () => Promise<unknown>) {
+  private async runRowAction(exec: () => Promise<unknown>, done?: { message: string; keep?: Task }) {
     this.pageError = '';
     try {
       await exec();
+      if (done?.keep && this.view === 'mine') this.keptDone.set(done.keep.id, done.keep);
+      // tasks#45: the card alone does not say the action worked (in «My tasks» it used to vanish).
+      if (done) erplora().notify?.({ type: 'success', message: done.message });
       await this.ctrl.load();
       if (this.view === 'mine') await this.loadMyTasks();
     } catch (e) {
@@ -556,10 +592,16 @@ export class ErpTasksList extends LitElement {
         this.openDetail(task);
         break;
       case 'start':
-        await this.runRowAction(() => erplora().command('tasks.tasks.update_status', { task_id: task.id, new_status: 'in_progress' }));
+        await this.runRowAction(
+          () => erplora().command('tasks.tasks.update_status', { task_id: task.id, new_status: 'in_progress' }),
+          { message: t('ui.taskStarted') },
+        );
         break;
       case 'complete':
-        await this.runRowAction(() => erplora().command('tasks.tasks.complete', { task_id: task.id }));
+        await this.runRowAction(() => erplora().command('tasks.tasks.complete', { task_id: task.id }), {
+          message: t('ui.taskCompleted'),
+          keep: { ...task, status: 'done' },
+        });
         break;
     }
   }
