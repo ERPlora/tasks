@@ -4242,14 +4242,17 @@ var ErpTasksList = class extends i3 {
   }
   // ── Commands ──────────────────────────────────────────────────────────────
   // El helper recibe el THUNK, no el nombre (ADR-0127: el literal del contrato vive EN la llamada).
-  async runCommand(exec, refreshDetail = true) {
+  // `onAccepted` runs as soon as the hub says yes, before the refresh (tasks#44): a box that keeps
+  // what was just sent while the screen reloads reads as «it did not go through».
+  async runCommand(exec, onAccepted) {
     this.detailBusy = true;
     this.detailError = "";
     try {
       await exec();
+      onAccepted?.();
       await this.ctrl.load();
       if (this.view === "mine") await this.loadMyTasks();
-      if (refreshDetail && this.detail) await this.loadDetail(this.detail.id, { keepTrail: true });
+      if (this.detail) await this.loadDetail(this.detail.id, { keepTrail: true });
     } catch (e5) {
       this.detailError = e5 instanceof Error ? e5.message : t5("ui.errRunAction");
     } finally {
@@ -4340,29 +4343,40 @@ var ErpTasksList = class extends i3 {
   }
   async addComment(ev) {
     ev.preventDefault();
-    if (!this.detail || !this.newComment.trim()) return;
-    await this.runCommand(() => erplora().command("tasks.tasks.add_comment", {
-      task_id: this.detail.id,
-      comment: this.newComment.trim(),
-      author_ref: this.userRef || null
-    }));
-    if (!this.detailError) this.newComment = "";
+    const sent = this.newComment;
+    if (!this.detail || !sent.trim()) return;
+    await this.runCommand(
+      () => erplora().command("tasks.tasks.add_comment", {
+        task_id: this.detail.id,
+        comment: sent.trim(),
+        author_ref: this.userRef || null
+      }),
+      // What the person typed while it was on its way is theirs: only the sent text is cleared.
+      () => {
+        if (this.newComment === sent) this.newComment = "";
+      }
+    );
   }
   async addSubtask(ev) {
     ev.preventDefault();
-    if (!this.detail || !this.newSubtaskTitle.trim()) return;
-    await this.runCommand(() => erplora().command("tasks.tasks.create", {
-      title: this.newSubtaskTitle.trim(),
-      description: "",
-      project_id: this.detail.project_id,
-      assigned_to_ref: null,
-      due_date: null,
-      priority: "medium",
-      parent_task_id: this.detail.id,
-      created_by_ref: null,
-      tags: []
-    }));
-    if (!this.detailError) this.newSubtaskTitle = "";
+    const sent = this.newSubtaskTitle;
+    if (!this.detail || !sent.trim()) return;
+    await this.runCommand(
+      () => erplora().command("tasks.tasks.create", {
+        title: sent.trim(),
+        description: "",
+        project_id: this.detail.project_id,
+        assigned_to_ref: null,
+        due_date: null,
+        priority: "medium",
+        parent_task_id: this.detail.id,
+        created_by_ref: null,
+        tags: []
+      }),
+      () => {
+        if (this.newSubtaskTitle === sent) this.newSubtaskTitle = "";
+      }
+    );
   }
   // ── Render ────────────────────────────────────────────────────────────────
   renderBadge(status) {
