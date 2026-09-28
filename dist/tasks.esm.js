@@ -3785,9 +3785,21 @@ var es_default = {
     overdue: "Vencida",
     dueToday: "Vence hoy",
     taskCompleted: "Tarea completada",
-    taskStarted: "Tarea iniciada"
+    taskStarted: "Tarea iniciada",
+    save: "Guardar",
+    actionActivate: "Activar",
+    actionDeactivate: "Desactivar",
+    actionAddTask: "A\xF1adir tarea",
+    projectActive: "Activo",
+    projectInactive: "Inactivo",
+    projectTasksHeading: "Tareas de este proyecto ({count})",
+    projectTasksMore: "Se muestran {shown} de {total}. El resto, en Tareas.",
+    emptyProjectTasks: "Este proyecto a\xFAn no tiene tareas.",
+    errLoadProjectTasks: "No se han podido cargar las tareas de este proyecto",
+    errUpdateProject: "No se ha podido guardar el proyecto"
   },
   errors: {
+    "tasks.project_not_found": "Ese proyecto no existe en este negocio.",
     "tasks.task_already_closed": "Esa tarea ya est\xE1 cerrada, as\xED que se ha dejado como estaba.",
     "tasks.task_not_found": "Esa tarea no existe en este negocio.",
     "tasks.task_unreadable": "No se ha podido leer esa tarea, as\xED que no se ha cambiado nada. Int\xE9ntalo de nuevo."
@@ -3883,9 +3895,21 @@ var en_default = {
     overdue: "Overdue",
     dueToday: "Due today",
     taskCompleted: "Task completed",
-    taskStarted: "Task started"
+    taskStarted: "Task started",
+    save: "Save",
+    actionActivate: "Activate",
+    actionDeactivate: "Deactivate",
+    actionAddTask: "Add task",
+    projectActive: "Active",
+    projectInactive: "Inactive",
+    projectTasksHeading: "Tasks in this project ({count})",
+    projectTasksMore: "Showing {shown} of {total}. Find the rest in Tasks.",
+    emptyProjectTasks: "No tasks in this project yet.",
+    errLoadProjectTasks: "Could not load this project's tasks",
+    errUpdateProject: "Could not save the project"
   },
   errors: {
+    "tasks.project_not_found": "That project does not exist in this business.",
     "tasks.task_already_closed": "That task is already closed, so it was left as it was.",
     "tasks.task_not_found": "That task does not exist in this business.",
     "tasks.task_unreadable": "That task could not be read, so nothing was changed. Try again."
@@ -4559,6 +4583,7 @@ define("erp-tasks-list", ErpTasksList);
 
 // ui/components/erp-tasks-projects/erp-tasks-projects.ts
 var CATALOG2 = { es: es_default, en: en_default };
+var PROJECT_TASKS_PAGE = 50;
 function erplora2() {
   const c5 = globalThis.erplora;
   if (!c5) throw new Error("erplora SDK no inicializado por el shell");
@@ -4575,8 +4600,20 @@ var ErpTasksProjects = class extends i3 {
     this.newColor = "";
     this.saving = false;
     this.formError = "";
-    // Re-render al cambiar el idioma del shell (ADR-0055): el getter `columns` y el texto del
-    // template se re-evalúan con el nuevo `erplora.locale`.
+    this.detail = null;
+    this.editName = "";
+    this.editColor = "";
+    this.detailBusy = false;
+    this.detailError = "";
+    this.projectTasks = [];
+    this.projectTasksTotal = 0;
+    this.projectTasksLoading = false;
+    this.projectTasksError = "";
+    this.newTaskTitle = "";
+    /** Which project the last tasks request was for: a late answer for another one is dropped. */
+    this.tasksRequestFor = "";
+    // Re-render on a shell language change (ADR-0055): the `columns`/`rowActions` getters and the
+    // template text are re-evaluated with the new `erplora.locale`.
     this.onLocaleChange = () => this.requestUpdate();
   }
   static {
@@ -4589,6 +4626,27 @@ var ErpTasksProjects = class extends i3 {
     .form { display:flex; flex-direction:column; gap:.7rem; }
     .form ion-button { align-self:flex-end; }
     .err { color:#d9480f; font-weight:600; }
+    /* tasks#43 — the project sheet: same frame as the task detail in the Tasks tab. It never shrinks
+       (the table below it does) and scrolls on its own on a short screen. */
+    .detail { flex:0 0 auto; max-height:70vh; overflow:auto; border:1px solid var(--ion-border-color,#e7e2d6);
+      border-radius:12px; padding:1rem; margin:0 0 1rem; background:var(--ion-card-background,#fffdf7); }
+    .detail-head { display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; margin-bottom:.35rem; }
+    .detail-head h3 { margin:0; font-size:1.05rem; flex:1; min-width:0; overflow-wrap:anywhere; }
+    .swatch { width:.9rem; height:.9rem; border-radius:50%; flex:0 0 auto;
+      border:1px solid var(--ion-border-color,#e7e2d6); }
+    .muted { color:var(--ion-color-medium,#6f6a5e); font-size:.9rem; margin:0 0 .75rem; }
+    .badge { display:inline-block; padding:.1rem .55rem; border-radius:999px; font-size:.78rem; font-weight:600;
+      background:var(--ok-surface-2, var(--ion-color-step-50, rgba(var(--ion-text-color-rgb, 24, 24, 27), 0.04))); }
+    .badge.active, .badge.done { background:#d3f9d8; color:#2b8a3e; }
+    .badge.cancelled { background:#ffe3e3; color:#c92a2a; }
+    .badge.in_progress { background:#d0ebff; color:#1971c2; }
+    .badge.blocked { background:#fff3bf; color:#e67700; }
+    .edit, .add-task { display:flex; gap:.75rem; flex-wrap:wrap; align-items:end; margin:.5rem 0 .75rem; }
+    .edit ion-input, .add-task ion-input { flex:1 1 11rem; min-width:9rem; }
+    h4 { margin:1rem 0 .4rem; font-size:.95rem; }
+    .ptask { display:flex; gap:.6rem; align-items:center; border-top:1px solid var(--ion-border-color,#e7e2d6); padding:.35rem 0; }
+    .ptask .t { flex:1; min-width:0; overflow-wrap:anywhere; }
+    .empty { color:var(--ion-color-medium,#6f6a5e); font-size:.9rem; padding:.35rem 0; margin:0; }
   `;
   }
   // Getter (no campo): se re-evalúa en cada render, así los textos cambian con el idioma activo
@@ -4612,6 +4670,10 @@ var ErpTasksProjects = class extends i3 {
       }
     ];
   }
+  /** tasks#43 — the card carries a visible way in, like the Tasks cards. */
+  get rowActions() {
+    return [{ id: "open", label: t6("ui.actionOpen"), icon: "open-outline", color: "primary" }];
+  }
   // TODO-LIT: componentWillLoad → connectedCallback. Recuerda: connectedCallback se dispara
   // en CADA reconexión al DOM (no solo en el primer montaje). Si la init debe correr una
   // sola vez tras el primer render, considera firstUpdated() en su lugar.
@@ -4625,8 +4687,11 @@ var ErpTasksProjects = class extends i3 {
     });
     await this.ctrl.load();
     try {
-      const off = erplora2().on("tasks.project.created", () => this.ctrl.load());
-      this.unsub = () => off();
+      const offs = [
+        erplora2().on("tasks.project.created", () => this.ctrl.load()),
+        erplora2().on("tasks.project.updated", () => this.ctrl.load())
+      ];
+      this.unsub = () => offs.forEach((off) => off());
     } catch {
     }
   }
@@ -4662,6 +4727,159 @@ var ErpTasksProjects = class extends i3 {
       this.saving = false;
     }
   }
+  // ── Project sheet (tasks#43) ─────────────────────────────────────────────
+  openProject(row) {
+    const project = row;
+    this.showProject(project);
+    void this.loadProjectTasks(project.id);
+  }
+  showProject(project) {
+    const switching = this.detail?.id !== project.id;
+    this.detail = { ...project };
+    this.editName = project.name ?? "";
+    this.editColor = project.color ?? "";
+    if (switching) {
+      this.detailError = "";
+      this.newTaskTitle = "";
+      this.projectTasks = [];
+      this.projectTasksTotal = 0;
+      this.projectTasksError = "";
+    }
+  }
+  closeProject() {
+    this.detail = null;
+    this.tasksRequestFor = "";
+    this.detailError = "";
+    this.newTaskTitle = "";
+    this.projectTasks = [];
+    this.projectTasksTotal = 0;
+    this.projectTasksError = "";
+    this.projectTasksLoading = false;
+  }
+  async loadProjectTasks(projectId) {
+    this.tasksRequestFor = projectId;
+    this.projectTasksLoading = true;
+    this.projectTasksError = "";
+    try {
+      const page = await erplora2().queryPage("tasks.tasks.list", {
+        filters: { project_id: projectId },
+        sort: "created_at",
+        dir: "desc",
+        limit: PROJECT_TASKS_PAGE,
+        offset: 0
+      });
+      if (this.tasksRequestFor !== projectId) return;
+      this.projectTasks = page?.rows ?? [];
+      this.projectTasksTotal = page?.total ?? this.projectTasks.length;
+    } catch (e5) {
+      if (this.tasksRequestFor !== projectId) return;
+      this.projectTasks = [];
+      this.projectTasksTotal = 0;
+      this.projectTasksError = e5 instanceof Error ? e5.message : t6("ui.errLoadProjectTasks");
+    } finally {
+      if (this.tasksRequestFor === projectId) this.projectTasksLoading = false;
+    }
+  }
+  /** Sends the edit and re-reads the list; the sheet then shows what the server holds. */
+  async updateProject(changes) {
+    const project = this.detail;
+    if (!project) return;
+    this.detailBusy = true;
+    this.detailError = "";
+    try {
+      await erplora2().command("tasks.projects.update", { project_id: project.id, ...changes });
+      await this.ctrl.load();
+      if (this.detail?.id === project.id) this.showProject({ ...project, ...changes });
+    } catch (e5) {
+      this.detailError = e5 instanceof Error ? e5.message : t6("ui.errUpdateProject");
+    } finally {
+      this.detailBusy = false;
+    }
+  }
+  async saveProject(ev) {
+    ev.preventDefault();
+    const project = this.detail;
+    const name = this.editName.trim();
+    if (!project || !name || this.detailBusy) return;
+    await this.updateProject({ name, color: this.editColor.trim(), is_active: project.is_active ? 1 : 0 });
+  }
+  /** Activate / Deactivate keeps the SAVED name and colour: unsaved typing is not sent with it. */
+  async toggleActive() {
+    const project = this.detail;
+    if (!project || this.detailBusy) return;
+    await this.updateProject({ name: project.name, color: project.color ?? "", is_active: project.is_active ? 0 : 1 });
+  }
+  async addTask(ev) {
+    ev.preventDefault();
+    const project = this.detail;
+    const title = this.newTaskTitle.trim();
+    if (!project || !title || this.detailBusy) return;
+    this.detailBusy = true;
+    this.detailError = "";
+    try {
+      await erplora2().command("tasks.tasks.create", { title, project_id: project.id });
+      this.newTaskTitle = "";
+      if (this.detail?.id === project.id) await this.loadProjectTasks(project.id);
+    } catch (e5) {
+      this.detailError = e5 instanceof Error ? e5.message : t6("ui.errCreateTask");
+    } finally {
+      this.detailBusy = false;
+    }
+  }
+  statusLabel(status) {
+    const key = `ui.status.${status}`;
+    const label = t6(key);
+    return label === key ? status : label;
+  }
+  renderProjectTasks() {
+    if (this.projectTasksLoading && !this.projectTasks.length) {
+      return b2`<p class="empty" data-testid="tasks-project-tasks-loading">${t6("ui.loading")}</p>`;
+    }
+    if (this.projectTasksError) {
+      return b2`<p class="err" data-testid="tasks-project-tasks-error">${this.projectTasksError}</p>`;
+    }
+    if (!this.projectTasks.length) {
+      return b2`<p class="empty" data-testid="tasks-project-tasks-empty">${t6("ui.emptyProjectTasks")}</p>`;
+    }
+    return b2`${this.projectTasks.map(
+      (task) => b2`<div class="ptask" data-testid="tasks-project-task">
+          <span class="t">${task.task_number} — ${task.title}</span>
+          <span class="badge ${task.status}">${this.statusLabel(task.status)}</span>
+        </div>`
+    )}
+      ${this.projectTasksTotal > this.projectTasks.length ? b2`<p class="empty">${t6("ui.projectTasksMore", { shown: this.projectTasks.length, total: this.projectTasksTotal })}</p>` : A}`;
+  }
+  renderDetail() {
+    const project = this.detail;
+    if (!project) return A;
+    const active = !!project.is_active;
+    return b2`<section class="detail" data-testid="tasks-project-detail">
+      <div class="detail-head">
+        ${project.color ? b2`<span class="swatch" style="background:${project.color}"></span>` : A}
+        <h3>${project.name}</h3>
+        <span class="badge ${active ? "active" : ""}" data-testid="tasks-project-state">${active ? t6("ui.projectActive") : t6("ui.projectInactive")}</span>
+        <ion-button size="small" fill="clear" data-testid="tasks-project-close" @click=${() => this.closeProject()}>${t6("ui.close")}</ion-button>
+      </div>
+      <p class="muted">${t6("ui.colCode")}: ${project.code}</p>
+      <form class="edit" @submit=${(e5) => this.saveProject(e5)}>
+        <ion-input mode="md" fill="outline" label-placement="floating" label=${t6("ui.colName")} .value=${this.editName}
+          @ionInput=${(e5) => this.editName = e5.target.value ?? ""}></ion-input>
+        <ion-input mode="md" fill="outline" label-placement="floating" label=${t6("ui.colColor")} placeholder=${t6("ui.colorPlaceholder")} .value=${this.editColor}
+          @ionInput=${(e5) => this.editColor = e5.target.value ?? ""}></ion-input>
+        <ion-button type="submit" size="small" data-testid="tasks-project-save" ?disabled=${this.detailBusy || !this.editName.trim()}>${this.detailBusy ? t6("ui.saving") : t6("ui.save")}</ion-button>
+        <ion-button size="small" fill="outline" data-testid="tasks-project-toggle-active" ?disabled=${this.detailBusy}
+          @click=${() => this.toggleActive()}>${active ? t6("ui.actionDeactivate") : t6("ui.actionActivate")}</ion-button>
+      </form>
+      ${this.detailError ? b2`<p class="err" data-testid="tasks-project-detail-error">${this.detailError}</p>` : A}
+      <h4>${t6("ui.projectTasksHeading", { count: this.projectTasksTotal })}</h4>
+      ${this.renderProjectTasks()}
+      <form class="add-task" @submit=${(e5) => this.addTask(e5)}>
+        <ion-input mode="md" fill="outline" label-placement="floating" label=${t6("ui.actionAddTask")} placeholder=${t6("ui.newTaskPlaceholder")} .value=${this.newTaskTitle}
+          @ionInput=${(e5) => this.newTaskTitle = e5.target.value ?? ""}></ion-input>
+        <ion-button type="submit" size="small" data-testid="tasks-project-add-task" ?disabled=${this.detailBusy || !this.newTaskTitle.trim()}>${t6("ui.actionAddTask")}</ion-button>
+      </form>
+    </section>`;
+  }
   /** pm#513: the refusal appears above the button that was pressed — on a phone that can leave it
    *  off the sheet. Bring it into view when it appears, not again on every keystroke. */
   updated(changed) {
@@ -4673,7 +4891,10 @@ var ErpTasksProjects = class extends i3 {
   render() {
     return b2`<div class="page">
         ${this.ctrl?.error ? b2`<p class="err">${this.ctrl.error}</p>` : A}
-        <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .views=${true} .cardTitle=${(row) => String(row.name ?? row.code ?? "\u2014")} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${t6("ui.searchProjectsPlaceholder")} .emptyMessage=${this.ctrl?.loading ? t6("ui.loading") : t6("ui.emptyProjects")} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)}>
+        ${this.renderDetail()}
+        <ok-data-table .serverSide=${true} .fill=${true} .addable=${true} .views=${true} .cardTitle=${(row) => String(row.name ?? row.code ?? "\u2014")} .columns=${this.columns} .rows=${this.ctrl?.rows ?? []} .total=${this.ctrl?.total ?? 0} .page=${this.ctrl?.state.page ?? 0} .pageSize=${this.ctrl?.state.pageSize ?? 50} .sort=${this.ctrl?.state.sort} .sortDir=${this.ctrl?.state.dir ?? "desc"} .searchable=${true} .searchPlaceholder=${t6("ui.searchProjectsPlaceholder")} .actions=${this.rowActions} .rowClickable=${true} .emptyMessage=${this.ctrl?.loading ? t6("ui.loading") : t6("ui.emptyProjects")} @pageChange=${(e5) => this.ctrl.setPage(e5.detail)} @sortChange=${(e5) => this.ctrl.setSort(e5.detail.sort, e5.detail.dir)} @searchChange=${(e5) => this.ctrl.setSearch(e5.detail)} @filterChange=${(e5) => this.ctrl.setFilter(e5.detail.col, e5.detail.value)} @rowClick=${(e5) => this.openProject(e5.detail.row)} @rowAction=${(e5) => {
+      if (e5.detail.actionId === "open") this.openProject(e5.detail.row);
+    }}>
           <!-- El formulario se proyecta SIEMPRE en el panel: si solo se pintara al abrirlo, el «+»
                abriría un panel vacío (la tabla no re-renderiza a sus hijos de luz). -->
           <form slot="create" class="form" @submit=${(e5) => this.createProject(e5)}>
@@ -4704,4 +4925,34 @@ __decorateClass([
 __decorateClass([
   r5()
 ], ErpTasksProjects.prototype, "formError", 2);
+__decorateClass([
+  r5()
+], ErpTasksProjects.prototype, "detail", 2);
+__decorateClass([
+  r5()
+], ErpTasksProjects.prototype, "editName", 2);
+__decorateClass([
+  r5()
+], ErpTasksProjects.prototype, "editColor", 2);
+__decorateClass([
+  r5()
+], ErpTasksProjects.prototype, "detailBusy", 2);
+__decorateClass([
+  r5()
+], ErpTasksProjects.prototype, "detailError", 2);
+__decorateClass([
+  r5()
+], ErpTasksProjects.prototype, "projectTasks", 2);
+__decorateClass([
+  r5()
+], ErpTasksProjects.prototype, "projectTasksTotal", 2);
+__decorateClass([
+  r5()
+], ErpTasksProjects.prototype, "projectTasksLoading", 2);
+__decorateClass([
+  r5()
+], ErpTasksProjects.prototype, "projectTasksError", 2);
+__decorateClass([
+  r5()
+], ErpTasksProjects.prototype, "newTaskTitle", 2);
 define("erp-tasks-projects", ErpTasksProjects);

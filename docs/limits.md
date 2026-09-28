@@ -39,6 +39,7 @@ These fail as **no-ops**, with no message:
 | Assign | `task_id` |
 | Add a comment | `task_id`, **`comment`** (non-empty) |
 | Create a project | `code`, `name` |
+| Edit a project | `project_id`, `name` (non-empty), `color`, `is_active` (`0` or `1`) |
 | List my tasks | `assigned_to_ref` |
 
 ## Accepted values
@@ -66,7 +67,7 @@ These fail as **no-ops**, with no message:
 |---|---|
 | See tasks, subtasks, comments and projects | `tasks.view_task` |
 | Create a task, add a comment, create a project | `tasks.add_task` |
-| Assign, change status, complete | `tasks.manage_task` |
+| Assign, change status, complete, edit/activate/deactivate a project | `tasks.manage_task` |
 
 **All three roles — admin, manager and employee — have all three permissions.** There is no
 restricted tier in this module.

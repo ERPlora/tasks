@@ -20,7 +20,7 @@ versión instalada y cita la de TU versión, no la de la última publicada. En i
 | Fichero | Para qué |
 | ------- | -------- |
 | [`docs/overview.md`](docs/overview.md) | Qué hace y qué NO hace; el vocabulario y la numeración |
-| [`docs/screens.md`](docs/screens.md) | Tasks y Projects: crear, asignar, cambiar estado, completar, comentar |
+| [`docs/screens.md`](docs/screens.md) | Tasks y Projects: crear, asignar, cambiar estado, completar, comentar, abrir y editar un proyecto |
 | [`docs/concepts.md`](docs/concepts.md) | Tareas ≠ tickets, **los 3 roles tienen los MISMOS permisos**, `completed_at` se gestiona solo, `cancelled` ≠ `done`, borrar proyecto ≠ borrar tarea padre |
 | [`docs/limits.md`](docs/limits.md) | Los 4 errores y los 3 **no-op mudos**, valores aceptados y diagnóstico |
 
@@ -36,8 +36,8 @@ editar no sirve para nada.
 | ---- | ------ | ------- |
 | query | `tasks.tasks.list` / `.get` / `.subtasks` / `.comments` / `.my` · `tasks.projects.list` | `view_task` |
 | command | `tasks.tasks.create` (WASM) · `.add_comment` · `tasks.projects.create` | `add_task` |
-| command | `tasks.tasks.update_status` (WASM) / `.complete` (WASM) / `.assign` | `manage_task` |
-| emite | `tasks.task.created` / `.status_changed` / `.completed` (⚠️ **del handler**, no del manifest), `tasks.task.assigned`, `tasks.comment.added`, `tasks.project.created` | — |
+| command | `tasks.tasks.update_status` (WASM) / `.complete` (WASM) / `.assign` · `tasks.projects.update` | `manage_task` |
+| emite | `tasks.task.created` / `.status_changed` / `.completed` (⚠️ **del handler**, no del manifest), `tasks.task.assigned`, `tasks.comment.added`, `tasks.project.created`, `tasks.project.updated` | — |
 | escucha | — (bloque declarado y **vacío**) | — |
 
 Navegación: `erp-tasks-list` («Tasks») y `erp-tasks-projects` («Projects»).
