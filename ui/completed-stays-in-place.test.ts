@@ -193,3 +193,30 @@ describe('a row action says it worked (tasks#45)', () => {
     expect(es.taskCompleted).not.toBe(es.taskStarted);
   });
 });
+
+describe('a card only offers what can still be done to it (tasks#45)', () => {
+  type Action = { id: string; hidden?: (r: Task) => boolean; disabled?: (r: Task) => boolean };
+  /** The row actions a card offers: hidden ones are not painted (outfitkit ≥ 0.1.84), disabled
+   *  ones cannot be pressed (older shells) — either way the person cannot run them. */
+  const offered = (el: Wc, row: Task): string[] =>
+    ((el.shadowRoot.querySelector('ok-data-table') as unknown as { actions: Action[] }).actions)
+      .filter((a) => a.hidden?.(row) !== true && a.disabled?.(row) !== true)
+      .map((a) => a.id);
+
+  it('the card kept as done in «My tasks» no longer offers «Start» or «Complete»', async () => {
+    const el = await mountMine();
+    await rowAction(el, 'complete', 'b');
+    const kept = (el.shadowRoot.querySelector('ok-data-table') as unknown as { rows: Task[] }).rows.find((r) => r.id === 'b')!;
+    expect(kept.status).toBe('done');
+    expect(offered(el, kept)).toEqual(['detail']);
+  });
+
+  it('follows the status: to do or blocked → start and complete; in progress → complete; closed → only the detail', async () => {
+    const el = await mountMine();
+    expect(offered(el, { ...task('x', 'x'), status: 'todo' })).toEqual(['detail', 'start', 'complete']);
+    expect(offered(el, { ...task('x', 'x'), status: 'blocked' })).toEqual(['detail', 'start', 'complete']);
+    expect(offered(el, { ...task('x', 'x'), status: 'in_progress' })).toEqual(['detail', 'complete']);
+    expect(offered(el, { ...task('x', 'x'), status: 'done' })).toEqual(['detail']);
+    expect(offered(el, { ...task('x', 'x'), status: 'cancelled' })).toEqual(['detail']);
+  });
+});

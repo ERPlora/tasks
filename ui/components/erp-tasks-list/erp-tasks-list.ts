@@ -368,10 +368,15 @@ export class ErpTasksList extends LitElement {
   }
 
   private get rowActions() {
+    // tasks#45: a card offers only what can still be done to it — the one kept as done in «My tasks»
+    // must not invite a second «Complete». `hidden` drops the button (OutfitKit ≥ 0.1.84); `disabled`
+    // covers an older shell that ignores it.
+    const closed = (r: Record<string, unknown>) => r.status === 'done' || r.status === 'cancelled';
+    const notStartable = (r: Record<string, unknown>) => r.status === 'in_progress' || closed(r);
     return [
       { id: 'detail', label: t('ui.actionDetail'), icon: 'open-outline', color: 'primary' },
-      { id: 'start', label: t('ui.actionStart'), icon: 'play-circle-outline', color: 'primary' },
-      { id: 'complete', label: t('ui.actionComplete'), icon: 'checkmark-done-outline', color: 'success' },
+      { id: 'start', label: t('ui.actionStart'), icon: 'play-circle-outline', color: 'primary', hidden: notStartable, disabled: notStartable },
+      { id: 'complete', label: t('ui.actionComplete'), icon: 'checkmark-done-outline', color: 'success', hidden: closed, disabled: closed },
     ];
   }
 

@@ -4119,10 +4119,12 @@ var ErpTasksList = class extends i3 {
     ];
   }
   get rowActions() {
+    const closed = (r6) => r6.status === "done" || r6.status === "cancelled";
+    const notStartable = (r6) => r6.status === "in_progress" || closed(r6);
     return [
       { id: "detail", label: t5("ui.actionDetail"), icon: "open-outline", color: "primary" },
-      { id: "start", label: t5("ui.actionStart"), icon: "play-circle-outline", color: "primary" },
-      { id: "complete", label: t5("ui.actionComplete"), icon: "checkmark-done-outline", color: "success" }
+      { id: "start", label: t5("ui.actionStart"), icon: "play-circle-outline", color: "primary", hidden: notStartable, disabled: notStartable },
+      { id: "complete", label: t5("ui.actionComplete"), icon: "checkmark-done-outline", color: "success", hidden: closed, disabled: closed }
     ];
   }
   async connectedCallback() {
