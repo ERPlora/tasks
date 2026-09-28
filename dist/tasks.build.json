@@ -1,7 +1,7 @@
 {
   "file": "dist/tasks.esm.js",
-  "sources_sha256": "748a2be1339dac2f2b74503fcd2c17af58c1ee2cc3743add2ccedb1d7b9c2c6f",
+  "sources_sha256": "19a0a8dcd0bc637c44ab7a4a1688d456fc89c7492da7c6df76e48850c2adb125",
   "locales_sha256": "66d17ba937d6215dfb57979f827a28ad2e413ab43ee156a72aa5c69d334151b1",
-  "bundle_sha256": "bba0a1588ecda3b300f30e77c2965c2a3e869d32a0b01235184e58aff033470f",
-  "built_at": "2026-09-28T23:35:42.197Z"
+  "bundle_sha256": "7697e0eef303d3970dbf0851a6ac4a34baa3e3850e3ae5d84886d8bd131bd9a2",
+  "built_at": "2026-09-28T23:45:53.327Z"
 }
