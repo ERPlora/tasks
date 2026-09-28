@@ -158,6 +158,12 @@ describe('«My tasks» — the card just completed stays in its slot (tasks#45)'
     expect(onScreen(el)).toEqual(['a:todo', 'b:todo', 'c:todo', 'd:todo']);
     expect(el.pageError).toBe('A manager has to approve this.');
     expect(notices.filter((n) => n.type === 'success')).toEqual([]);
+    // Nothing was kept: when the task later leaves «My tasks» for another reason (someone cancels
+    // it), the next reload drops it instead of painting it back as done.
+    tasks.find((t) => t.id === 'b')!.status = 'cancelled';
+    await el.loadMyTasks();
+    await settle(el);
+    expect(onScreen(el)).toEqual(['a:todo', 'c:todo', 'd:todo']);
   });
 });
 
