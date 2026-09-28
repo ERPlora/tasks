@@ -7,8 +7,9 @@
 // quick «add a task here». That is what this pins:
 //
 //   · the card is clickable AND carries a visible «Open» action, like the Tasks cards;
-//   · the sheet shows the project READ FROM THE SERVER (never the row object the table handed over:
-//     rv-payment_gateways-45), and the tasks filtered by `project_id`;
+//   · the sheet works on a COPY of the row (never the object the table handed over:
+//     rv-payment_gateways-45), shows what the server accepted after a save, and lists the tasks
+//     filtered by `project_id`;
 //   · Save / Deactivate / Activate go through `tasks.projects.update`, a refusal stays inside the
 //     sheet with the sheet open, and the list is re-read afterwards;
 //   · opening another project never paints the previous one's tasks (rv-invoice-126);
@@ -34,6 +35,8 @@ let listeners: Record<string, Array<() => void>> = {};
 let listQueries: { name: string; params: Record<string, any> }[] = [];
 /** When set, the tasks query reports this many matching tasks (a project bigger than one page). */
 let tasksTotal: number | null = null;
+/** When set, every command waits for this promise before answering (a command on its way). */
+let holdCommands: Promise<void> | null = null;
 
 beforeEach(() => {
   projects = [
@@ -52,6 +55,7 @@ beforeEach(() => {
   listeners = {};
   listQueries = [];
   tasksTotal = null;
+  holdCommands = null;
   (globalThis as Record<string, unknown>).erplora = {
     query: async () => [],
     queryPage: async (name: string, params: Record<string, any> = {}) => {
@@ -70,6 +74,7 @@ beforeEach(() => {
     },
     command: async (name: string, payload: Record<string, unknown>) => {
       commands.push({ name, payload });
+      if (holdCommands) await holdCommands;
       if (refuse) throw new Error(refuse);
       if (name === 'tasks.projects.update') {
         const p = projects.find((x) => x.id === payload.project_id);
@@ -217,6 +222,49 @@ describe('the project card opens the project (tasks#43)', () => {
     expect(text(sheet(el))).not.toContain('ui.projectTasksMore');
   });
 
+  it('opening another project clears the previous one\'s refusal and half-typed task', async () => {
+    const el = await mount();
+    await tap(el, 'p1');
+    refuse = 'nope';
+    el.newTaskTitle = 'Call the landlord';
+    await el.addTask(new Event('submit'));
+    await settle(el);
+    expect(sheet(el)!.querySelector('[data-testid="tasks-project-detail-error"]')).toBeTruthy();
+    refuse = null;
+    await tap(el, 'p2');
+    expect(text(sheet(el))).toContain('Salon refit');
+    expect(sheet(el)!.querySelector('[data-testid="tasks-project-detail-error"]'), 'p1\'s refusal is shown under p2').toBeNull();
+    expect(el.newTaskTitle, 'the task typed for p1 would be added to p2').toBe('');
+  });
+
+  it('a late FAILURE of the previous project never replaces the next one\'s tasks', async () => {
+    let release!: () => void;
+    holdTasksFor = { projectId: 'p1', gate: new Promise<void>((r) => (release = r)) };
+    const el = await mount();
+    await tap(el, 'p1');
+    holdTasksFor = null;
+    await tap(el, 'p2');
+    expect(text(sheet(el))).toContain('Paint walls');
+    failTasksLoad = true;
+    release();
+    await settle(el);
+    expect(sheet(el)!.querySelector('[data-testid="tasks-project-tasks-error"]'), 'p1\'s failure painted under p2').toBeNull();
+    expect(text(sheet(el))).toContain('Paint walls');
+  });
+
+  it('the previous project\'s answer does not end the next one\'s «loading» (never «no tasks» while loading)', async () => {
+    let release!: () => void;
+    holdTasksFor = { projectId: 'p1', gate: new Promise<void>((r) => (release = r)) };
+    const el = await mount();
+    await tap(el, 'p1');
+    holdTasksFor = { projectId: 'p2', gate: new Promise<void>(() => {}) };
+    await tap(el, 'p2');
+    release();
+    await settle(el);
+    expect(sheet(el)!.querySelector('[data-testid="tasks-project-tasks-loading"]'), 'p2 is still loading').toBeTruthy();
+    expect(sheet(el)!.querySelector('[data-testid="tasks-project-tasks-empty"]'), '«no tasks» while p2 loads').toBeNull();
+  });
+
   it('«Close» closes the sheet', async () => {
     const el = await mount();
     await tap(el, 'p1');
@@ -311,6 +359,60 @@ describe('the sheet manages the project', () => {
     await settle(el);
     expect(el.newTaskTitle).toBe('Call the landlord');
     expect(text(sheet(el)!.querySelector('[data-testid="tasks-project-detail-error"]'))).toBe('nope');
+  });
+
+  it('the colour is sent trimmed, like the name', async () => {
+    const el = await mount();
+    await tap(el, 'p1');
+    el.editColor = '  #00aa00 ';
+    await el.saveProject(new Event('submit'));
+    expect(commands.find((c) => c.name === 'tasks.projects.update')?.payload.color).toBe('#00aa00');
+  });
+
+  it('a second Save or Activate while the first is on its way sends nothing', async () => {
+    let release!: () => void;
+    holdCommands = new Promise<void>((r) => (release = r));
+    const el = await mount();
+    await tap(el, 'p1');
+    el.editName = 'Renamed';
+    const first = el.saveProject(new Event('submit'));
+    await el.saveProject(new Event('submit'));
+    await el.toggleActive();
+    release();
+    await first;
+    expect(commands.filter((c) => c.name === 'tasks.projects.update'), 'a double tap sent the edit twice').toHaveLength(1);
+  });
+
+  it('a save still on its way when another project is opened does not paint the old one back', async () => {
+    let release!: () => void;
+    holdCommands = new Promise<void>((r) => (release = r));
+    const el = await mount();
+    await tap(el, 'p1');
+    el.editName = 'Q3 audit (stores)';
+    const saving = el.saveProject(new Event('submit'));
+    await tap(el, 'p2');
+    release();
+    await saving;
+    await settle(el);
+    expect(text(sheet(el)!.querySelector('h3')), 'the sheet jumped back to the saved project').toBe('Salon refit');
+    expect(el.editName).toBe('Salon refit');
+  });
+
+  it('a task added just before opening another project is not listed under the new one', async () => {
+    let release!: () => void;
+    holdCommands = new Promise<void>((r) => (release = r));
+    const el = await mount();
+    await tap(el, 'p1');
+    el.newTaskTitle = 'Call the landlord';
+    const adding = el.addTask(new Event('submit'));
+    await tap(el, 'p2');
+    release();
+    await adding;
+    await settle(el);
+    const rows = [...sheet(el)!.querySelectorAll('[data-testid="tasks-project-task"]')].map(text).join(' | ');
+    expect(text(sheet(el))).toContain('Salon refit');
+    expect(rows, 'p1\'s tasks are listed under p2').not.toContain('Count stock');
+    expect(rows).toContain('Paint walls');
   });
 
   it('an edit made elsewhere (tasks.project.updated) re-reads the list', async () => {

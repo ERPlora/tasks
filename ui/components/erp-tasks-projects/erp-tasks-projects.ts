@@ -57,7 +57,9 @@ export class ErpTasksProjects extends LitElement {
     /* Cadena de altura: sin ella, el modo fill de la tabla no tiene alto que llenar. */
     :host { display:flex; flex-direction:column; height:100%; min-height:0; font-family: system-ui, sans-serif; color: var(--ion-text-color, #1c1b18); }
     .page { display:flex; flex-direction:column; min-height:0; flex:1 1 auto; }
-    .page > ok-data-table { flex:1 1 auto; min-height:0; }
+    /* The floor keeps ~20 rows of text when the project sheet fills a short screen: the PAGE scrolls
+       instead of the list collapsing to its toolbar (as kitchen#131 and the showcase demo). */
+    .page > ok-data-table { flex:1 1 auto; min-height:20rem; }
     /* El alta vive en el panel lateral de la tabla: columna estrecha, no fila que se desborda. */
     .form { display:flex; flex-direction:column; gap:.7rem; }
     .form ion-button { align-self:flex-end; }
