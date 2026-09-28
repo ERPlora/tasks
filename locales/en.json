@@ -84,7 +84,9 @@
     "errCreateTask": "Could not create the task",
     "errCreateProject": "Could not create the project",
     "overdue": "Overdue",
-    "dueToday": "Due today"
+    "dueToday": "Due today",
+    "taskCompleted": "Task completed",
+    "taskStarted": "Task started"
   },
   "errors": {
     "tasks.task_already_closed": "That task is already closed, so it was left as it was.",

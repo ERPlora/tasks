@@ -3783,7 +3783,9 @@ var es_default = {
     errCreateTask: "No se pudo crear la tarea",
     errCreateProject: "No se pudo crear el proyecto",
     overdue: "Vencida",
-    dueToday: "Vence hoy"
+    dueToday: "Vence hoy",
+    taskCompleted: "Tarea completada",
+    taskStarted: "Tarea iniciada"
   },
   errors: {
     "tasks.task_already_closed": "Esa tarea ya est\xE1 cerrada, as\xED que se ha dejado como estaba.",
@@ -3879,7 +3881,9 @@ var en_default = {
     errCreateTask: "Could not create the task",
     errCreateProject: "Could not create the project",
     overdue: "Overdue",
-    dueToday: "Due today"
+    dueToday: "Due today",
+    taskCompleted: "Task completed",
+    taskStarted: "Task started"
   },
   errors: {
     "tasks.task_already_closed": "That task is already closed, so it was left as it was.",
@@ -3924,6 +3928,24 @@ function dueTone(due, status, now) {
   if (day < today) return "overdue";
   if (day === today) return "today";
   return "none";
+}
+function keepCompletedInPlace(previous, fresh, kept) {
+  const result = [...fresh];
+  const has = (id) => result.some((r6) => r6.id === id);
+  previous.forEach((row, i7) => {
+    const done = kept.get(row.id);
+    if (!done || has(row.id)) return;
+    let at = 0;
+    for (let j2 = i7 - 1; j2 >= 0; j2--) {
+      const k2 = result.findIndex((r6) => r6.id === previous[j2].id);
+      if (k2 >= 0) {
+        at = k2 + 1;
+        break;
+      }
+    }
+    result.splice(at, 0, done);
+  });
+  return result;
 }
 function erplora() {
   const c5 = globalThis.erplora;
@@ -3982,6 +4004,8 @@ var ErpTasksList = class extends i3 {
     this.myTasks = [];
     this.myLoading = false;
     this.myError = "";
+    /** tasks#45: tasks completed from «My tasks» during this visit to the tab, kept in their slot. */
+    this.keptDone = /* @__PURE__ */ new Map();
     this.detail = null;
     this.detailError = "";
     this.detailBusy = false;
@@ -4095,10 +4119,12 @@ var ErpTasksList = class extends i3 {
     ];
   }
   get rowActions() {
+    const closed = (r6) => r6.status === "done" || r6.status === "cancelled";
+    const notStartable = (r6) => r6.status === "in_progress" || closed(r6);
     return [
       { id: "detail", label: t5("ui.actionDetail"), icon: "open-outline", color: "primary" },
-      { id: "start", label: t5("ui.actionStart"), icon: "play-circle-outline", color: "primary" },
-      { id: "complete", label: t5("ui.actionComplete"), icon: "checkmark-done-outline", color: "success" }
+      { id: "start", label: t5("ui.actionStart"), icon: "play-circle-outline", color: "primary", hidden: notStartable, disabled: notStartable },
+      { id: "complete", label: t5("ui.actionComplete"), icon: "checkmark-done-outline", color: "success", hidden: closed, disabled: closed }
     ];
   }
   async connectedCallback() {
@@ -4143,7 +4169,7 @@ var ErpTasksList = class extends i3 {
         apply_horizon: 0,
         due_horizon: null
       });
-      this.myTasks = rows ?? [];
+      this.myTasks = keepCompletedInPlace(this.myTasks, rows ?? [], this.keptDone);
     } catch (e5) {
       this.myError = e5 instanceof Error ? e5.message : t5("ui.errLoadMine");
     } finally {
@@ -4152,6 +4178,7 @@ var ErpTasksList = class extends i3 {
   }
   setView(view) {
     this.view = view;
+    this.keptDone = /* @__PURE__ */ new Map();
     if (view === "mine") void this.loadMyTasks();
   }
   // ── Detalle + drill-down ──────────────────────────────────────────────────
@@ -4231,10 +4258,12 @@ var ErpTasksList = class extends i3 {
   }
   /** A row action runs with no detail open: its refusal goes to the page, never to the detail error,
    *  which is not painted then (pm#513). */
-  async runRowAction(exec) {
+  async runRowAction(exec, done) {
     this.pageError = "";
     try {
       await exec();
+      if (done?.keep && this.view === "mine") this.keptDone.set(done.keep.id, done.keep);
+      if (done) erplora().notify?.({ type: "success", message: done.message });
       await this.ctrl.load();
       if (this.view === "mine") await this.loadMyTasks();
     } catch (e5) {
@@ -4281,10 +4310,16 @@ var ErpTasksList = class extends i3 {
         this.openDetail(task);
         break;
       case "start":
-        await this.runRowAction(() => erplora().command("tasks.tasks.update_status", { task_id: task.id, new_status: "in_progress" }));
+        await this.runRowAction(
+          () => erplora().command("tasks.tasks.update_status", { task_id: task.id, new_status: "in_progress" }),
+          { message: t5("ui.taskStarted") }
+        );
         break;
       case "complete":
-        await this.runRowAction(() => erplora().command("tasks.tasks.complete", { task_id: task.id }));
+        await this.runRowAction(() => erplora().command("tasks.tasks.complete", { task_id: task.id }), {
+          message: t5("ui.taskCompleted"),
+          keep: { ...task, status: "done" }
+        });
         break;
     }
   }

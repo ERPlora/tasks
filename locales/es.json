@@ -85,7 +85,9 @@
     "errCreateTask": "No se pudo crear la tarea",
     "errCreateProject": "No se pudo crear el proyecto",
     "overdue": "Vencida",
-    "dueToday": "Vence hoy"
+    "dueToday": "Vence hoy",
+    "taskCompleted": "Tarea completada",
+    "taskStarted": "Tarea iniciada"
   },
   "errors": {
     "tasks.task_already_closed": "Esa tarea ya está cerrada, así que se ha dejado como estaba.",

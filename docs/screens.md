@@ -22,6 +22,14 @@ author of each comment are shown by the person's name, read from the hub's peopl
 `tasks.tasks.my` lists the tasks assigned to a given person. It takes the assignee reference and
 returns their tasks — the "what am I supposed to be doing" view.
 
+Only **open** tasks are listed: dated ones first, the soonest due on top; then the undated ones,
+newest first. Starting, assigning or commenting a task does not move its card.
+
+A task you **complete** from its card stays where it was, shown as done, until you leave the tab —
+so you can see which one you closed. It is gone the next time you open **My tasks**.
+
+Starting or completing a task from its card confirms it with a short notice.
+
 ### Create a task
 
 1. Give the **title** — it is the only required field.

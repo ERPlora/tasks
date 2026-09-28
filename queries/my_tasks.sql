@@ -12,4 +12,8 @@ WHERE hub_id = :hub_id AND is_deleted = 0
   AND assigned_to_ref = :assigned_to_ref
   AND status NOT IN ('done', 'cancelled')
   AND (:apply_horizon = 0 OR (due_date IS NOT NULL AND due_date <= :due_horizon))
-ORDER BY due_date ASC;
+-- tasks#45: a TOTAL order. By due date alone every undated task tied, and Postgres hands ties back
+-- in scan order — an UPDATE («Start», assign) rewrites the row at the end of the heap, so the card
+-- jumped to the bottom of the list. Undated ones go newest first, like the «All» tab; the id
+-- settles what is left. Covered by tests/my_tasks_order.pg.test.py.
+ORDER BY due_date ASC, created_at DESC, id ASC;
