@@ -14,6 +14,7 @@
     "optional_queries": [],
     "commands": [
       "tasks.projects.create",
+      "tasks.projects.update",
       "tasks.tasks.add_comment",
       "tasks.tasks.assign",
       "tasks.tasks.complete",
@@ -23,6 +24,7 @@
     "events": [
       "tasks.comment.added",
       "tasks.project.created",
+      "tasks.project.updated",
       "tasks.task.assigned",
       "tasks.task.completed",
       "tasks.task.created",

@@ -35,6 +35,7 @@ It is for **your team**, not for customers.
 | `tasks.task.assigned` | it is assigned or reassigned |
 | `tasks.comment.added` | a comment is added |
 | `tasks.project.created` | a project is created |
+| `tasks.project.updated` | a project's name, colour or active state is changed |
 
 The first three are emitted **by the handler** and are not declared in the manifest — searching
 `module.json` for them finds nothing.
