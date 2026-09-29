@@ -80,6 +80,23 @@ Buckets that group related tasks (`tasks.projects.list`, 50 rows per page). Requ
 
 Requires `tasks.add_task`.
 
+### Open a project
+
+Tap a project's card (or its row on a wide screen), or its **Open** action. Its sheet opens above
+the list with:
+
+- the **name**, the **code** and whether it is **Active** or **Inactive**;
+- the **name** and **colour**, editable: **Save** stores them. The code cannot be changed — it is
+  the project's key;
+- **Deactivate** / **Activate**, which takes the project out of use or back, keeping its name and
+  colour (anything typed and not saved is not sent with it);
+- the **tasks in this project** (the 50 most recent, with a count of the rest, which the Tasks tab
+  lists) and a box to **add a task** straight into it.
+
+Saving, activating and deactivating (`tasks.projects.update`) require `tasks.manage_task`; adding a
+task requires `tasks.add_task`. If the project no longer exists in this business the change is
+refused and the sheet says so.
+
 Deleting a project does not delete its tasks; they simply lose the project.
 
 ## Subtasks

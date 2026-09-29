@@ -417,6 +417,26 @@
         "description": "Creates a new project to group related tasks"
       }
     },
+    "tasks.projects.update": {
+      "permission": "tasks.manage_task",
+      "transaction": true,
+      "sql": [
+        "commands/update_project.sql"
+      ],
+      "schema": "schemas/update_project.json",
+      "emit": [
+        "tasks.project.updated"
+      ],
+      "expect_rows": {
+        "op": "min",
+        "n": 1,
+        "error": "tasks.project_not_found",
+        "message": "That project does not exist in this business."
+      },
+      "ai": {
+        "description": "Edits a project's name and colour, or marks it active or inactive"
+      }
+    },
     "tasks._bump_counter": {
       "permission": "tasks.add_task",
       "sql": [
@@ -443,6 +463,7 @@
     }
   },
   "errors": {
+    "tasks.project_not_found": {},
     "tasks.task_already_closed": {},
     "tasks.task_not_found": {},
     "tasks.task_unreadable": {}
@@ -452,6 +473,7 @@
     "emits": [
       "tasks.comment.added",
       "tasks.project.created",
+      "tasks.project.updated",
       "tasks.task.assigned",
       "tasks.task.completed",
       "tasks.task.created",
