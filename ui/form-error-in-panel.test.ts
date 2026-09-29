@@ -103,6 +103,24 @@ const onPage = (el: Wc, testid: string): Element | null => {
   return notice && !notice.closest('form[slot="create"]') && !notice.closest('section.detail') ? notice : null;
 };
 
+/**
+ * Every load failure painted outside the panel's form: the module's own notice or, when the
+ * loaded outfitkit gives `ok-data-table` an `error` state (pm#533), the table itself. An older
+ * table ignores the property and paints nothing, so there it does not count.
+ */
+function failuresOutsideTheForm(el: Wc): string[] {
+  const outside = (n: Element): boolean => !n.closest('form[slot="create"]');
+  const notices = [...el.shadowRoot.querySelectorAll('.err')].filter(outside).map((n) => n.textContent?.trim() ?? '');
+  const table = customElements.get('ok-data-table');
+  const tables =
+    table && 'error' in table.prototype
+      ? [...el.shadowRoot.querySelectorAll('ok-data-table')]
+          .filter(outside)
+          .map((n) => (n as HTMLElement & { error?: string }).error ?? '')
+      : [];
+  return [...notices, ...tables];
+}
+
 /** Every place the refusal text is painted in, by where it sits. */
 function whereIsTheRefusal(el: Wc): string[] {
   return [...el.shadowRoot.querySelectorAll('*')]
@@ -264,9 +282,8 @@ describe('pm#513 · tasks: what goes wrong OUTSIDE the save stays on the page', 
     loadFails = true;
     const el = await mount('erp-tasks-list');
     const inside = el.shadowRoot.querySelector('form[slot="create"] .err');
-    const outside = [...el.shadowRoot.querySelectorAll('.err')].filter((n) => !n.closest('form[slot="create"]'));
     expect(inside).toBeNull();
-    expect(outside.map((n) => n.textContent?.trim())).toContain('list down');
+    expect(failuresOutsideTheForm(el)).toContain('list down');
   });
 });
 
@@ -319,8 +336,7 @@ describe('pm#513 · projects: a refused «Add» is shown INSIDE the panel form',
     loadFails = true;
     const el = await mount('erp-tasks-projects');
     const inside = el.shadowRoot.querySelector('form[slot="create"] .err');
-    const outside = [...el.shadowRoot.querySelectorAll('.err')].filter((n) => !n.closest('form[slot="create"]'));
     expect(inside).toBeNull();
-    expect(outside.map((n) => n.textContent?.trim())).toContain('list down');
+    expect(failuresOutsideTheForm(el)).toContain('list down');
   });
 });
