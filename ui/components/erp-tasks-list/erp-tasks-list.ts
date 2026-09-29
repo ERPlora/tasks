@@ -522,14 +522,17 @@ export class ErpTasksList extends LitElement {
   // ── Commands ──────────────────────────────────────────────────────────────
 
   // El helper recibe el THUNK, no el nombre (ADR-0127: el literal del contrato vive EN la llamada).
-  private async runCommand(exec: () => Promise<unknown>, refreshDetail = true) {
+  // `onAccepted` runs as soon as the hub says yes, before the refresh (tasks#44): a box that keeps
+  // what was just sent while the screen reloads reads as «it did not go through».
+  private async runCommand(exec: () => Promise<unknown>, onAccepted?: () => void) {
     this.detailBusy = true;
     this.detailError = '';
     try {
       await exec();
+      onAccepted?.();
       await this.ctrl.load();
       if (this.view === 'mine') await this.loadMyTasks();
-      if (refreshDetail && this.detail) await this.loadDetail(this.detail.id, { keepTrail: true });
+      if (this.detail) await this.loadDetail(this.detail.id, { keepTrail: true });
     } catch (e) {
       this.detailError = e instanceof Error ? e.message : t('ui.errRunAction');
     } finally {
@@ -631,30 +634,56 @@ export class ErpTasksList extends LitElement {
 
   private async addComment(ev: Event) {
     ev.preventDefault();
-    if (!this.detail || !this.newComment.trim()) return;
-    await this.runCommand(() => erplora().command('tasks.tasks.add_comment', {
-      task_id: this.detail.id,
-      comment: this.newComment.trim(),
-      author_ref: this.userRef || null,
-    }));
-    if (!this.detailError) this.newComment = '';
+    const sent = this.newComment;
+    if (!this.detail || !sent.trim()) return;
+    const taskId = this.detail.id;
+    const comment = sent.trim();
+    const authorRef = this.userRef || null;
+    await this.runCommand(
+      () => erplora().command('tasks.tasks.add_comment', { task_id: taskId, comment, author_ref: authorRef }),
+      // What the person typed while it was on its way is theirs: only the sent text is cleared.
+      // The accepted comment goes into the thread in that same instant (newest first, as the hub
+      // lists them); the reload swaps it for the stored row. Not if another task is open by now.
+      () => {
+        if (this.newComment === sent) this.newComment = '';
+        if (this.detail?.id !== taskId) return;
+        const created_at = new Date().toISOString();
+        this.comments = [{ id: '', task_id: taskId, author_ref: authorRef, comment, created_at }, ...this.comments];
+      },
+    );
   }
 
   private async addSubtask(ev: Event) {
     ev.preventDefault();
-    if (!this.detail || !this.newSubtaskTitle.trim()) return;
-    await this.runCommand(() => erplora().command('tasks.tasks.create', {
-      title: this.newSubtaskTitle.trim(),
-      description: '',
-      project_id: this.detail.project_id,
-      assigned_to_ref: null,
-      due_date: null,
-      priority: 'medium',
-      parent_task_id: this.detail.id,
-      created_by_ref: null,
-      tags: [],
-    }));
-    if (!this.detailError) this.newSubtaskTitle = '';
+    const sent = this.newSubtaskTitle;
+    if (!this.detail || !sent.trim()) return;
+    const parent = this.detail;
+    const title = sent.trim();
+    await this.runCommand(
+      () => erplora().command('tasks.tasks.create', {
+        title,
+        description: '',
+        project_id: parent.project_id,
+        assigned_to_ref: null,
+        due_date: null,
+        priority: 'medium',
+        parent_task_id: parent.id,
+        created_by_ref: null,
+        tags: [],
+      }),
+      // Same rule as the comment: the accepted subtask is listed at once, without its number (the
+      // hub gives it) nor «Open» until the reload brings the stored row.
+      () => {
+        if (this.newSubtaskTitle === sent) this.newSubtaskTitle = '';
+        if (this.detail?.id !== parent.id) return;
+        const pending: Task = {
+          id: '', task_number: '', title, description: '', project_id: parent.project_id, status: 'todo',
+          priority: 'medium', assigned_to_ref: null, created_by_ref: null, due_date: null, completed_at: null,
+          parent_task_id: parent.id, tags: '', created_at: new Date().toISOString(),
+        };
+        this.subtasks = [...this.subtasks, pending];
+      },
+    );
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -721,9 +750,11 @@ export class ErpTasksList extends LitElement {
       ${this.subtasks.length
         ? this.subtasks.map(
             (s) => html`<div class="subtask">
-              <span class="t">${s.task_number} — ${s.title}</span>
+              <span class="t">${s.id ? `${s.task_number} — ${s.title}` : s.title}</span>
               ${this.renderBadge(s.status)}
-              <ion-button size="small" fill="clear" @click=${() => this.drillDown(s)}>${t('ui.actionOpen')}</ion-button>
+              ${s.id
+                ? html`<ion-button size="small" fill="clear" @click=${() => this.drillDown(s)}>${t('ui.actionOpen')}</ion-button>`
+                : nothing}
             </div>`,
           )
         : html`<p class="empty">${t('ui.emptySubtasks')}</p>`}
